@@ -1,0 +1,5 @@
+(cram
+ (package mdexp-tests)
+ (deps
+  (package mdexp)
+  %{bin:mdexp}))

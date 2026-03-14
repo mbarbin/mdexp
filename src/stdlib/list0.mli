@@ -1,0 +1,14 @@
+(*_**************************************************************************************)
+(*_  mdexp-stdlib - Extending OCaml's Stdlib for Mdexp                                  *)
+(*_  Copyright (C) 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>                  *)
+(*_  SPDX-License-Identifier: MIT OR LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
+(*_**************************************************************************************)
+
+include module type of struct
+  include ListLabels
+end
+
+val filter : 'a list -> f:('a -> bool) -> 'a list
+val iter : 'a list -> f:('a -> unit) -> unit
+val map : 'a list -> f:('a -> 'b) -> 'b list
+val fold_left : 'a list -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc

@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**" # This will match pull requests targeting any branch
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-version:
+          - "5.4"
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Environment setup
+        run: |
+          echo "DUNE_WORKSPACE=$PWD/dune-workspace-${{ matrix.ocaml-version }}" >> "$GITHUB_ENV"
+
+      - name: Setup Dune
+        uses: mbarbin/setup-dune@ae2985bcdedc6fb24e5743d6f9dace9cf262b41c # v2.0.0+patch-4
+        with:
+          version: "3.21.0"
+          workspace: ${{ env.DUNE_WORKSPACE }}
+          cache-prefix: "main-ci-${{ matrix.ocaml-version }}"
+          cache-readonly: ${{ github.ref != 'refs/heads/main' }}
+          steps: install-dune enable-pkg lazy-update-depexts install-gpatch install-depexts
+
+      - name: Build and Run tests
+        run: dune build @all @runtest
+
+      - name: Lint
+        run: dune build @lint @fmt @unused-libs
+
+      - name: Build Doc
+        run: dune build @doc
+
+      - name: Check for uncommitted changes
+        run: git diff --exit-code

@@ -1,0 +1,21 @@
+{
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.associations": {
+        "**/crs-config.json": "jsonc"
+    },
+    "cSpell.words": [
+        "Barbin",
+        "decr",
+        "endline",
+        "Fpath",
+        "ltrim",
+        "Mathieu",
+        "mbarbin",
+        "mdexp",
+        "rtrim",
+        "sexp",
+        "unflushed",
+        "Yojson"
+    ]
+}
