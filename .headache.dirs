@@ -1,0 +1,9 @@
+# List of directories for headache.sh
+# Add new directories below. Lines starting with '#' are ignored.
+src/mdexp
+src/mdexp_cli
+src/mdexp_cli/bin
+src/stdlib
+test/mdexp
+test/mdexp_cli
+test/stdlib

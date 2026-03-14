@@ -1,0 +1,9 @@
+(lang dunolint 1.0)
+
+;; Everything is instrumented
+
+(rule
+ (enforce
+  (dune
+   (instrumentation
+    (backend bisect_ppx)))))
