@@ -4,7 +4,7 @@
 
 Welcome to **mdexp**, a literate programming tool to assist in maintaining
 documentation files where part of the content is generated and checked during
-compilation via with embedded snapshots.
+compilation via embedded snapshots.
 
 ## Current State
 
