@@ -1,13 +1,7 @@
-## X.X.XXXX (unreleased)
+## 0.0.20260315 (2025-03-15)
 
-Initial release of mdexp.
+This early initial release is experimental and unstable. It is meant to verify that the release pipeline works correctly.
 
 ### Added
 
-### Changed
-
-### Deprecated
-
-### Fixed
-
-### Removed
+- Intialize project.
