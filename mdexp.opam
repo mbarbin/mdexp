@@ -9,7 +9,7 @@ doc: "https://mbarbin.github.io/mdexp/"
 bug-reports: "https://github.com/mbarbin/mdexp/issues"
 depends: [
   "dune" {>= "3.20"}
-  "ocaml" {>= "5.2"}
+  "ocaml" {>= "5.3"}
   "cmdlang" {>= "0.0.10"}
   "cmdlang-cmdliner-err-runner" {>= "0.0.16"}
   "dune-build-info" {>= "3.20"}
