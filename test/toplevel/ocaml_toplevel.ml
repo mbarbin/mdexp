@@ -66,22 +66,22 @@ type t =
   }
 
 let create () =
-  let temp_dir = Stdlib.Filename.temp_dir "ocaml_toplevel" "" in
+  let temp_dir = Filename.temp_dir "ocaml_toplevel" "" in
   { context = Shexp_process.Context.create (); temp_dir }
 ;;
 
 let rec remove_dir path =
-  if Stdlib.Sys.is_directory path
+  if Sys.is_directory path
   then (
-    let entries = Stdlib.Sys.readdir path in
-    Array.iter entries ~f:(fun name -> remove_dir (Stdlib.Filename.concat path name));
+    let entries = Sys.readdir path in
+    Array.iter entries ~f:(fun name -> remove_dir (Filename.concat path name));
     Unix.rmdir path)
   else Unix.unlink path
 ;;
 
 let dispose t =
   Shexp_process.Context.dispose t.context;
-  if Stdlib.Sys.file_exists t.temp_dir then remove_dir t.temp_dir
+  if Sys.file_exists t.temp_dir then remove_dir t.temp_dir
 ;;
 
 let run f =
@@ -121,8 +121,8 @@ let eval { context; temp_dir } ~code =
   print_endline "```";
   print_endline "";
   print_endline "```terminal";
-  let stdout_file = Stdlib.Filename.concat temp_dir "stdout.tmp" in
-  let stderr_file = Stdlib.Filename.concat temp_dir "stderr.tmp" in
+  let stdout_file = Filename.concat temp_dir "stdout.tmp" in
+  let stderr_file = Filename.concat temp_dir "stderr.tmp" in
   Exn.protect
     ~f:(fun () ->
       let process =
@@ -148,8 +148,8 @@ let eval { context; temp_dir } ~code =
       if exit_code <> 0 then Printf.printf "[%d]\n" exit_code;
       print_endline "```")
     ~finally:(fun () ->
-      if Stdlib.Sys.file_exists stdout_file then Unix.unlink stdout_file;
-      if Stdlib.Sys.file_exists stderr_file then Unix.unlink stderr_file)
+      if Sys.file_exists stdout_file then Unix.unlink stdout_file;
+      if Sys.file_exists stderr_file then Unix.unlink stderr_file)
 ;;
 
 (* @mdexp
