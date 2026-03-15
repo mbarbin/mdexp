@@ -11,14 +11,15 @@
 (maintainers "Mathieu Barbin <opensource@mbarbin.org>")
 
 (source
- (codeberg mdexp/ocaml-mdexp))
+ (github mbarbin/mdexp))
+
+(documentation "https://mbarbin.github.io/mdexp/")
 
 (implicit_transitive_deps false)
 
 (package
  (name mdexp)
  (synopsis "Literate Programming with Embedded Snapshots")
- (allow_empty)
  (depends
   (ocaml
    (>= 5.2))
@@ -52,7 +53,6 @@
 (package
  (name mdexp-tests)
  (synopsis "Tests for mdexp")
- (allow_empty)
  (depends
   (ocaml
    (>= 5.2))
@@ -66,6 +66,10 @@
    (>= v0.17))
   (ppx_windtrap
    (>= 0.1.0))
+  (print-table
+   (>= 0.1.3))
+  (shexp
+   (>= v0.17.0))
   (windtrap
    (>= 0.1.0))
   (yojson

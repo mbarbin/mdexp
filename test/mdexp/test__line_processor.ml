@@ -57,6 +57,19 @@ let%expect_test "OCaml: single-line prose directive" =
     [%expect {| |}])
 ;;
 
+let%expect_test "OCaml: single-line prose with whitespaces" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t "(* @mdexp        # Title After Spaces*)";
+    [%expect
+      {|
+      Emit_prose_line "# Title After Spaces"
+      Flush_prose
+      Blank_separator
+      |}];
+    flush t;
+    [%expect {| |}])
+;;
+
 let%expect_test "OCaml: multi-line prose block" =
   with_parser ~lang:Ocaml (fun t ->
     feed t "(* @mdexp";
@@ -67,6 +80,25 @@ let%expect_test "OCaml: multi-line prose block" =
     [%expect
       {|
       Emit_prose_line "More content"
+      Flush_prose
+      Blank_separator
+      |}];
+    feed t "let x = 42";
+    [%expect {| |}];
+    flush t;
+    [%expect {| |}])
+;;
+
+let%expect_test "OCaml: multi-line prose block" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t "(* @mdexp";
+    [%expect {| |}];
+    feed t "     Some prose content indented to the right";
+    [%expect {| Emit_prose_line "     Some prose content indented to the right" |}];
+    feed t "     More content *)";
+    [%expect
+      {|
+      Emit_prose_line "     More content"
       Flush_prose
       Blank_separator
       |}];
@@ -111,7 +143,7 @@ let%expect_test "OCaml: prose with @ block closer" =
 let%expect_test "OCaml: code directive opens fence" =
   with_parser ~lang:Ocaml (fun t ->
     feed t "(* @mdexp.code *)";
-    [%expect {| Open_code_fence "ocaml" |}];
+    [%expect {| Enter_code None |}];
     feed t "let x = 42";
     [%expect {| Emit_code_line "let x = 42" |}];
     feed t "(* @mdexp.end *)";
@@ -127,8 +159,8 @@ let%expect_test "OCaml: code directive opens fence" =
 
 let%expect_test "OCaml: code directive with explicit language" =
   with_parser ~lang:Ocaml (fun t ->
-    feed t "(* @mdexp.code bash *)";
-    [%expect {| Open_code_fence "bash" |}];
+    feed t {|(* @mdexp.code { lang: "bash" } *)|};
+    [%expect {| Enter_code (Some "{\"lang\":\"bash\"}") |}];
     feed t "echo hello";
     [%expect {| Emit_code_line "echo hello" |}];
     flush t;
@@ -150,7 +182,7 @@ let%expect_test "OCaml: prose then code transition" =
       {|
       Flush_prose
       Blank_separator
-      Open_code_fence "ocaml"
+      Enter_code None
       |}];
     feed t "let x = 42";
     [%expect {| Emit_code_line "let x = 42" |}];
@@ -168,7 +200,7 @@ let%expect_test "OCaml: prose then code transition" =
 let%expect_test "OCaml: end directive from code block" =
   with_parser ~lang:Ocaml (fun t ->
     feed t "(* @mdexp.code *)";
-    [%expect {| Open_code_fence "ocaml" |}];
+    [%expect {| Enter_code None |}];
     feed t "code";
     [%expect {| Emit_code_line "code" |}];
     feed t "(* @mdexp.end *)";
@@ -215,7 +247,7 @@ let%expect_test "OCaml: directive on block closer line" =
       {|
       Flush_prose
       Blank_separator
-      Open_code_fence "ocaml"
+      Enter_code None
       |}];
     flush t;
     [%expect
@@ -252,7 +284,7 @@ let%expect_test "OCaml: indented block comment" =
 let%expect_test "OCaml: code block with indented raw lines" =
   with_parser ~lang:Ocaml (fun t ->
     feed t "(* @mdexp.code *)";
-    [%expect {| Open_code_fence "ocaml" |}];
+    [%expect {| Enter_code None |}];
     feed t "  (* let x = 42 *)";
     [%expect {| Emit_code_line "  (* let x = 42 *)" |}];
     feed t "(* @mdexp.end *)";
@@ -279,7 +311,7 @@ let%expect_test "OCaml: flush pending prose" =
 let%expect_test "OCaml: flush pending code" =
   with_parser ~lang:Ocaml (fun t ->
     feed t "(* @mdexp.code *)";
-    [%expect {| Open_code_fence "ocaml" |}];
+    [%expect {| Enter_code None |}];
     feed t "unflushed code";
     [%expect {| Emit_code_line "unflushed code" |}];
     flush t;
@@ -311,7 +343,7 @@ let%expect_test "Rust: line comments with directive" =
 let%expect_test "Rust: line comments in code block preserve raw line" =
   with_parser ~lang:Rust (fun t ->
     feed t "// @mdexp.code";
-    [%expect {| Open_code_fence "rust" |}];
+    [%expect {| Enter_code None |}];
     feed t "// let x = 42";
     [%expect {| Emit_code_line "// let x = 42" |}];
     feed t "// @mdexp.end";
@@ -496,6 +528,78 @@ let%expect_test "OCaml: config with quoted braces in string values" =
     [%expect {| Emit_prose_line "test" |}];
     flush t;
     [%expect {| Flush_prose |}])
+;;
+
+let%expect_test "OCaml: code with inline JSON5 config" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t {|(* @mdexp.code { lang: "bash" } *)|};
+    [%expect {| Enter_code (Some "{\"lang\":\"bash\"}") |}];
+    feed t "echo hello";
+    [%expect {| Emit_code_line "echo hello" |}];
+    feed t "(* @mdexp.end *)";
+    [%expect
+      {|
+      Flush_code
+      Close_code_fence
+      Blank_separator
+      |}];
+    flush t;
+    [%expect {| |}])
+;;
+
+let%expect_test "OCaml: code without config emits None" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t "(* @mdexp.code *)";
+    [%expect {| Enter_code None |}];
+    feed t "let x = 42";
+    [%expect {| Emit_code_line "let x = 42" |}];
+    flush t;
+    [%expect
+      {|
+      Flush_code
+      Close_code_fence
+      |}])
+;;
+
+let%expect_test "OCaml: code with multi-line JSON5 config" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t {|(* @mdexp.code {|};
+    [%expect {| |}];
+    feed t {|   lang: "bash"|};
+    [%expect {| |}];
+    feed t {|   } *)|};
+    [%expect {| Enter_code (Some "{\"lang\":\"bash\"}") |}];
+    feed t "echo hello";
+    [%expect {| Emit_code_line "echo hello" |}];
+    flush t;
+    [%expect
+      {|
+      Flush_code
+      Close_code_fence
+      |}])
+;;
+
+let%expect_test "OCaml: code multi-line config with separate block closer" =
+  with_parser ~lang:Ocaml (fun t ->
+    feed t {|(* @mdexp.code {|};
+    [%expect {| |}];
+    feed t {|   lang: "bash"|};
+    [%expect {| |}];
+    feed t "   }";
+    [%expect {| Enter_code (Some "{\"lang\":\"bash\"}") |}];
+    feed t "*)";
+    [%expect {| |}];
+    feed t "echo hello";
+    [%expect {| Emit_code_line "echo hello" |}];
+    feed t "(* @mdexp.end *)";
+    [%expect
+      {|
+      Flush_code
+      Close_code_fence
+      Blank_separator
+      |}];
+    flush t;
+    [%expect {| |}])
 ;;
 
 let%expect_test "OCaml: snapshot with inline JSON5 config" =

@@ -1,0 +1,15 @@
+[book]
+title = "mdexp Test Suite"
+authors = ["Mathieu Barbin"]
+language = "en"
+src = "."
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/mbarbin/mdexp"
+default-theme = "light"
+preferred-dark-theme = "navy"
+theme = "../doc/book/shared-theme"
+additional-js = ["../doc/book/shared-theme/ansi-plugin.js"]

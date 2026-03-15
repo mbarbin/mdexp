@@ -1,0 +1,270 @@
+(********************************************************************************)
+(*  mdexp - Literate Programming with Embedded Snapshots                        *)
+(*  Copyright (C) 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>           *)
+(*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
+(********************************************************************************)
+
+(* @mdexp
+
+# OCaml Toplevel Integration
+
+This module provides a way to run OCaml code in a toplevel and capture the
+output for documentation. This is useful for:
+
+- Documenting code fragments that don't compile in isolation
+- Showing REPL-style interactions with type information
+- Demonstrating error messages
+- Using libraries without requiring full compilation
+
+## Why a Custom Toplevel?
+
+mdexp supports running code blocks in a toplevel via ppx_expect that pipes code
+to a dune-built toplevel.
+
+Features:
+
+1. **Dune integration** - The toplevel rebuilds when dependencies change
+2. **Watch mode** - Works with `dune build -w`
+3. **Preloaded libraries** - Project libraries are available without `#require`
+4. **Verified output** - Snapshots ensure examples stay correct
+
+## Setup
+
+The dune file defines a custom toplevel with preloaded libraries:
+*)
+
+(* @mdexp.code { lang: "dune" } *)
+(*
+(toplevel
+ (name mdexp_toplevel)
+ (libraries mdexp_stdlib))
+*)
+
+(* @mdexp The test library depends on the toplevel executable: *)
+
+(* @mdexp.code { lang: "dune" } *)
+(*
+(library
+ (name mdexp_toplevel_test)
+ (inline_tests
+  (deps mdexp_toplevel.exe))
+ ...)
+*)
+
+(* @mdexp
+
+## Implementation
+
+The wrapper creates a context with a temp directory, writes code to a file,
+pipes it to the toplevel, and captures the output. *)
+
+module Unix = UnixLabels
+
+type t =
+  { context : Shexp_process.Context.t
+  ; temp_dir : string
+  }
+
+let create () =
+  let temp_dir = Stdlib.Filename.temp_dir "ocaml_toplevel" "" in
+  { context = Shexp_process.Context.create (); temp_dir }
+;;
+
+let rec remove_dir path =
+  if Stdlib.Sys.is_directory path
+  then (
+    let entries = Stdlib.Sys.readdir path in
+    Array.iter entries ~f:(fun name -> remove_dir (Stdlib.Filename.concat path name));
+    Unix.rmdir path)
+  else Unix.unlink path
+;;
+
+let dispose t =
+  Shexp_process.Context.dispose t.context;
+  if Stdlib.Sys.file_exists t.temp_dir then remove_dir t.temp_dir
+;;
+
+let run f =
+  let t = create () in
+  Exn.protect ~f:(fun () -> f t) ~finally:(fun () -> dispose t)
+;;
+
+(* The custom toplevel built by dune with project libraries preloaded.
+   This is available because of the (deps mdexp_toplevel.exe) in dune. *)
+let toplevel_exe = "./mdexp_toplevel.exe"
+
+(* Run OCaml code and print both the code and the toplevel output *)
+let eval { context; temp_dir } ~code =
+  (* Print the code block first *)
+  print_endline "```ocaml";
+  print_endline code;
+  print_endline "```";
+  print_endline "";
+  print_endline "```terminal";
+  (* Write code to a temp file *)
+  let code_file = Stdlib.Filename.concat temp_dir "code.ml" in
+  let stdout_file = Stdlib.Filename.concat temp_dir "stdout.tmp" in
+  let stderr_file = Stdlib.Filename.concat temp_dir "stderr.tmp" in
+  Out_channel.write_all code_file ~data:code;
+  Exn.protect
+    ~f:(fun () ->
+      (* Run custom toplevel on the code file *)
+      let process =
+        Shexp_process.call_exit_code
+          [ "sh"
+          ; "-c"
+          ; Printf.sprintf
+              "cat '%s' | %s -noprompt -no-version -color always 2>&1 | tail -n +10"
+              code_file
+              toplevel_exe
+          ]
+        |> Shexp_process.stdout_to stdout_file
+        |> Shexp_process.stderr_to stderr_file
+      in
+      let _exit_code = Shexp_process.eval ~context process in
+      let stdout_content = In_channel.read_all stdout_file in
+      let stderr_content = In_channel.read_all stderr_file in
+      (* Print the output, stripping noise *)
+      let output = stdout_content ^ stderr_content in
+      let lines = String.split_lines output in
+      let cleaned_lines =
+        List.filter lines ~f:(fun line ->
+          let stripped = String.trim line in
+          (not (String.is_empty stripped))
+          && (not (String.equal stripped "#"))
+          (* Filter out library loading messages *)
+          && (not (String.ends_with stripped ~suffix:": added to search path"))
+          && (not (String.ends_with stripped ~suffix:".cma: loaded"))
+          && (not (String.ends_with stripped ~suffix:".cmo: loaded"))
+          && not (String.ends_with stripped ~suffix:".cmxs: loaded"))
+      in
+      List.iter cleaned_lines ~f:print_endline;
+      print_endline "```")
+    ~finally:(fun () ->
+      if Stdlib.Sys.file_exists code_file then Unix.unlink code_file;
+      if Stdlib.Sys.file_exists stdout_file then Unix.unlink stdout_file;
+      if Stdlib.Sys.file_exists stderr_file then Unix.unlink stderr_file)
+;;
+
+(* @mdexp
+
+## Examples
+
+### Basic Evaluation
+
+Run simple OCaml expressions and see their values with type information: *)
+
+let%expect_test "basic eval" =
+  run
+  @@ fun t ->
+  eval t ~code:"let x = 1 + 1;;";
+  (* @mdexp.snapshot *)
+  [%expect
+    {|
+    ```ocaml
+    let x = 1 + 1;;
+    ```
+
+    ```terminal
+    val x : int = 2
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+### Side Effects
+
+Code with side effects shows both the output and the return value: *)
+
+let%expect_test "eval with print" =
+  run
+  @@ fun t ->
+  eval t ~code:{xxx|print_endline "Hello, World!";;|xxx};
+  (* @mdexp.snapshot *)
+  [%expect
+    {|
+    ```ocaml
+    print_endline "Hello, World!";;
+    ```
+
+    ```terminal
+    Hello, World!
+    - : unit = ()
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+### Type Errors
+
+Error messages include location information, useful for explaining
+what goes wrong with invalid code: *)
+
+let%expect_test "eval with error" =
+  run
+  @@ fun t ->
+  eval t ~code:{xxx|let x = 1 + "hello";;|xxx};
+  (* @mdexp.snapshot *)
+  [%expect
+    {|
+    ```ocaml
+    let x = 1 + "hello";;
+    ```
+
+    ```terminal
+    [1mLine 1, characters 12-19[0m:
+    1 | let x = 1 + "hello";;
+                    [1;31m^^^^^^^[0m
+    [1;31mError[0m: This constant has type [1mstring[0m but an expression was expected of type
+             [1mint[0m
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+### Using Preloaded Libraries
+
+The custom toplevel has libraries preloaded. No `#require` needed: *)
+
+let%expect_test "eval with preloaded library" =
+  run
+  @@ fun t ->
+  eval
+    t
+    ~code:
+      {xxx|open Mdexp_stdlib;;
+List.map [1;2;3] ~f:(fun x -> x * 2);;|xxx};
+  (* @mdexp.snapshot *)
+  [%expect
+    {|
+    ```ocaml
+    open Mdexp_stdlib;;
+    List.map [1;2;3] ~f:(fun x -> x * 2);;
+    ```
+
+    ```terminal
+    - : int list = [2; 4; 6]
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+## Integration with mdexp
+
+The `@mdexp.snapshot` directive extracts the output above into the
+generated markdown. This creates documentation with verified,
+reproducible REPL examples.
+
+To add more libraries to the toplevel, update the dune stanza:
+
+```dune
+(toplevel
+ (name my_toplevel)
+ (libraries my_project_lib))
+```
+
+The toplevel will be rebuilt automatically when dependencies change. *)

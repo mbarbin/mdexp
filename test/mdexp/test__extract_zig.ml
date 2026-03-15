@@ -49,7 +49,7 @@ let%expect_test "extract code block from Zig (comment-wrapped preserves //)" =
 let%expect_test "extract code block with actual Zig code" =
   let output =
     extract
-      {|// @mdexp.code zig
+      {|// @mdexp.code { lang: "zig" }
 const std = @import("std");
 pub fn main() void {
     std.debug.print("Hello\n", .{});
@@ -72,7 +72,7 @@ pub fn main() void {
 let%expect_test "code block preserves // comments in source code" =
   let output =
     extract
-      {|// @mdexp.code zig
+      {|// @mdexp.code { lang: "zig" }
 const std = @import("std");
 // Helper to create person columns
 pub fn create_columns() void {
@@ -211,7 +211,7 @@ let%expect_test "snapshot followed by code that must be re-processed" =
 // Result:
 // @mdexp.end
 
-// @mdexp.code zig
+// @mdexp.code { lang: "zig" }
 const std = @import("std");
 fn greet() void {
     std.debug.print("Hello\n", .{});

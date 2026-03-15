@@ -1,0 +1,43 @@
+; Custom toplevel with project libraries preloaded
+
+(toplevel
+ (name mdexp_toplevel)
+ (libraries mdexp_stdlib))
+
+; Test library for the toplevel wrapper
+
+(library
+ (name mdexp_toplevel_test)
+ (package mdexp-tests)
+ (inline_tests
+  (deps mdexp_toplevel.exe))
+ (flags
+  :standard
+  -w
+  +a-4-40-41-42-44-45-48-66
+  -warn-error
+  +a
+  -open
+  Mdexp_stdlib)
+ (libraries mdexp_stdlib shexp.process unix)
+ (instrumentation
+  (backend bisect_ppx))
+ (lint
+  (pps ppx_js_style -allow-let-operators -check-doc-comments))
+ (preprocess
+  (pps ppx_expect)))
+
+; Generate markdown documentation from the tutorial
+
+(rule
+ (target ocaml_toplevel.md)
+ (deps
+  ocaml_toplevel.ml
+  (alias ../../src/mdexp_cli/bin/all)
+  ../../src/mdexp_cli/bin/main.exe)
+ (alias runtest)
+ (mode promote)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp ocaml_toplevel.ml))))

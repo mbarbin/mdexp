@@ -27,6 +27,7 @@ module Action : sig
     | Flush_code
     | Blank_separator
     | Enter_snapshot of Located_json.t option
+    | Enter_code of Located_json.t option
     | Configure of Located_json.t
 
   val to_dyn : t -> Dyn.t

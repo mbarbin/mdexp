@@ -49,7 +49,7 @@ let%expect_test "extract code block from OCaml" =
 let%expect_test "extract code block with explicit language" =
   let output =
     extract
-      {|(* @mdexp.code bash *)
+      {|(* @mdexp.code { lang: "bash" } *)
 (* opam install mylib *)
 (* @mdexp.end *)
 |}
@@ -99,16 +99,18 @@ let%expect_test "mixed prose and code" =
 let%expect_test "block comment prose" =
   let output =
     extract
-      {|(* @mdexp
-# Testing Block Comment
+      {|
+(* @mdexp
 
-This is prose inside a multi-line block comment.
+   # Testing Block Comment
 
-## Section Two
+   This is prose inside a multi-line block comment.
 
-More text here.
-*)
+   ## Section Two
 
+   More text here. *)
+(* This comment is not part of the output. *)
+(* @mdexp.code *)
 let (_ : int) = 1
 |}
   in
@@ -122,6 +124,10 @@ let (_ : int) = 1
     ## Section Two
 
     More text here.
+
+    ```ocaml
+    let (_ : int) = 1
+    ```
     |}]
 ;;
 
@@ -222,7 +228,7 @@ let%expect_test "code block with blank comment lines" =
 let%expect_test "actual code in code block (not wrapped in comments)" =
   let output =
     extract
-      {|(* @mdexp.code ocaml *)
+      {|(* @mdexp.code { lang: "ocaml" } *)
 let run_cmd cmd =
   Printf.printf "$ %s\n" cmd;
   (* In real usage, this would execute the command *)
@@ -309,16 +315,18 @@ let%expect_test "prose preserves indentation for markdown list items" =
   in
   print_string output;
   [%expect
-    {|- **First item** spans
-  multiple lines with indentation.
-- **Second item** is on one line.
+    {|
+    - **First item** spans
+      multiple lines with indentation.
+    - **Second item** is on one line.
 
-1. **Numbered** with
-   a continuation line.
+    1. **Numbered** with
+       a continuation line.
 
-- **Nested list:**
-  - Sub-item one.
-  - Sub-item two.|}]
+    - **Nested list:**
+      - Sub-item one.
+      - Sub-item two.
+    |}]
 ;;
 
 (* -- Snapshot tests -- *)
@@ -751,4 +759,91 @@ let%expect_test "config without snapshot key does not affect snapshots" =
   in
   print_string output;
   [%expect {| plain |}]
+;;
+
+(* -- Config: default code settings -- *)
+
+let%expect_test "config sets default lang for subsequent code blocks" =
+  let output =
+    extract
+      {xxx|(* @mdexp.config { code: { lang: "bash" } } *)
+(* @mdexp.code *)
+(* echo hello *)
+(* @mdexp.end *)
+|xxx}
+  in
+  print_string output;
+  [%expect
+    {|
+    ```bash
+    echo hello
+    ```
+    |}]
+;;
+
+let%expect_test "config default lang applies to multiple code blocks" =
+  let output =
+    extract
+      {xxx|(* @mdexp.config { code: { lang: "text" } } *)
+(* @mdexp.code *)
+(* first *)
+(* @mdexp.end *)
+(* @mdexp.code *)
+(* second *)
+(* @mdexp.end *)
+|xxx}
+  in
+  print_string output;
+  [%expect
+    {|
+    ```text
+    first
+    ```
+
+    ```text
+    second
+    ```
+    |}]
+;;
+
+let%expect_test "code explicit config overrides defaults" =
+  let output =
+    extract
+      {xxx|(* @mdexp.config { code: { lang: "text" } } *)
+(* @mdexp.code { lang: "bash" } *)
+(* echo overridden *)
+(* @mdexp.end *)
+|xxx}
+  in
+  print_string output;
+  [%expect
+    {|
+    ```bash
+    echo overridden
+    ```
+    |}]
+;;
+
+let%expect_test "config with both code and snapshot defaults" =
+  let output =
+    extract
+      {xxx|(* @mdexp.config { code: { lang: "bash" }, snapshot: { lang: "json" } } *)
+(* @mdexp.code *)
+(* echo hello *)
+(* @mdexp.end *)
+(* @mdexp.snapshot *)
+[%expect {| {"key": "value"} |}]
+|xxx}
+  in
+  print_string output;
+  [%expect
+    {|
+    ```bash
+    echo hello
+    ```
+
+    ```json
+    {"key": "value"}
+    ```
+    |}]
 ;;
