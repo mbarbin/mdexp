@@ -14,8 +14,8 @@ depends: [
   "bisect_ppx" {>= "2.8.3"}
   "mdexp" {= version}
   "mdexp-tests" {= version}
-  "ppxlib" {>= "0.37.0"}
   "ppx_windtrap" {>= "0.1.0"}
+  "ppxlib" {>= "0.37.0"}
   "windtrap" {>= "0.1.0"}
   "odoc" {>= "3.0.0"}
 ]

@@ -60,16 +60,16 @@
    (= :version))
   (pplumbing-err
    (>= 0.0.16))
-  (ppxlib
-   (>= 0.37.0))
   (ppx_expect
    (>= v0.17))
   (ppx_windtrap
    (>= 0.1.0))
+  (ppxlib
+   (>= 0.37.0))
   (print-table
    (>= 0.1.3))
   (shexp
-   (>= v0.17.0))
+   (>= v0.17))
   (windtrap
    (>= 0.1.0))
   (yojson
@@ -92,10 +92,10 @@
    (= :version))
   (mdexp-tests
    (= :version))
-  (ppxlib
-   (>= 0.37.0))
   (ppx_windtrap
    (>= 0.1.0))
+  (ppxlib
+   (>= 0.37.0))
   (windtrap
    (>= 0.1.0))
   (odoc

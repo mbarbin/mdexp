@@ -17,12 +17,14 @@
   Mdexp_stdlib)
  (libraries mdexp_stdlib windtrap)
  (instrumentation
-  (backend ppx_windtrap))
+  (backend bisect_ppx))
  (preprocess
   (pps ppx_windtrap)))
 
 (executable
  (name windtrap_snapshots)
+ (instrumentation
+  (backend bisect_ppx))
  (modules windtrap_snapshots)
  (flags :standard -w +a-4-40-41-42-44-45-48-66 -warn-error +a)
  (libraries windtrap))
