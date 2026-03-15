@@ -6,6 +6,7 @@
 
 include ListLabels
 
+let exists l ~f = exists l ~f
 let filter l ~f = filter l ~f
 let iter l ~f = iter l ~f
 let map l ~f = map l ~f

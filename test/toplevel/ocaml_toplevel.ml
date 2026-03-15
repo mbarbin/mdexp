@@ -93,6 +93,26 @@ let run f =
    This is available because of the (deps mdexp_toplevel.exe) in dune. *)
 let toplevel_exe = "./mdexp_toplevel.exe"
 
+let is_toplevel_initialization_message line =
+  let stripped = String.trim line in
+  String.is_empty stripped
+  || String.equal stripped "#"
+  || List.exists
+       [ ": added to search path"; ".cma: loaded"; ".cmo: loaded"; ".cmxs: loaded" ]
+       ~f:(fun suffix -> String.ends_with stripped ~suffix)
+  || List.exists
+       [ "Findlib has been successfully loaded"
+       ; {|#require "package"|}
+       ; "#list;;"
+       ; "#camlp4o;;"
+       ; "#camlp4r;;"
+       ; "#predicates"
+       ; "Topfind.reset"
+       ; "#thread;;"
+       ]
+       ~f:(fun prefix -> String.starts_with stripped ~prefix)
+;;
+
 (* Run OCaml code and print both the code and the toplevel output *)
 let eval { context; temp_dir } ~code =
   (* Print the code block first *)
@@ -101,47 +121,33 @@ let eval { context; temp_dir } ~code =
   print_endline "```";
   print_endline "";
   print_endline "```terminal";
-  (* Write code to a temp file *)
-  let code_file = Stdlib.Filename.concat temp_dir "code.ml" in
   let stdout_file = Stdlib.Filename.concat temp_dir "stdout.tmp" in
   let stderr_file = Stdlib.Filename.concat temp_dir "stderr.tmp" in
-  Out_channel.write_all code_file ~data:code;
   Exn.protect
     ~f:(fun () ->
-      (* Run custom toplevel on the code file *)
       let process =
-        Shexp_process.call_exit_code
-          [ "sh"
-          ; "-c"
-          ; Printf.sprintf
-              "cat '%s' | %s -noprompt -no-version -color always 2>&1 | tail -n +10"
-              code_file
-              toplevel_exe
-          ]
+        Shexp_process.pipe
+          (Shexp_process.echo code)
+          (Shexp_process.call_exit_code
+             [ toplevel_exe; "-noprompt"; "-no-version"; "-color"; "always" ])
         |> Shexp_process.stdout_to stdout_file
         |> Shexp_process.stderr_to stderr_file
       in
-      let _exit_code = Shexp_process.eval ~context process in
+      let exit_code = Shexp_process.eval ~context process in
       let stdout_content = In_channel.read_all stdout_file in
       let stderr_content = In_channel.read_all stderr_file in
-      (* Print the output, stripping noise *)
-      let output = stdout_content ^ stderr_content in
+      (* Print the output, skipping leading initialization messages *)
+      let output = String.trim (stdout_content ^ stderr_content) in
       let lines = String.split_lines output in
-      let cleaned_lines =
-        List.filter lines ~f:(fun line ->
-          let stripped = String.trim line in
-          (not (String.is_empty stripped))
-          && (not (String.equal stripped "#"))
-          (* Filter out library loading messages *)
-          && (not (String.ends_with stripped ~suffix:": added to search path"))
-          && (not (String.ends_with stripped ~suffix:".cma: loaded"))
-          && (not (String.ends_with stripped ~suffix:".cmo: loaded"))
-          && not (String.ends_with stripped ~suffix:".cmxs: loaded"))
+      let rec skip_initialization_messages = function
+        | line :: rest when is_toplevel_initialization_message line ->
+          skip_initialization_messages rest
+        | lines -> lines
       in
-      List.iter cleaned_lines ~f:print_endline;
+      List.iter (skip_initialization_messages lines) ~f:print_endline;
+      if exit_code <> 0 then Printf.printf "[%d]\n" exit_code;
       print_endline "```")
     ~finally:(fun () ->
-      if Stdlib.Sys.file_exists code_file then Unix.unlink code_file;
       if Stdlib.Sys.file_exists stdout_file then Unix.unlink stdout_file;
       if Stdlib.Sys.file_exists stderr_file then Unix.unlink stderr_file)
 ;;
