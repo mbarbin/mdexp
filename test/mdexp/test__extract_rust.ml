@@ -291,7 +291,7 @@ let%expect_test "snapshot with block mode and code context" =
 // Output:
 // @mdexp.end
 
-// @mdexp.code rust
+// @mdexp.code { lang: "rust" }
 fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }

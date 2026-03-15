@@ -1,0 +1,129 @@
+(library
+ (name mdexp_examples_test)
+ (package mdexp-tests)
+ (inline_tests)
+ (flags
+  :standard
+  -w
+  +a-4-40-41-42-44-45-48-66
+  -warn-error
+  +a
+  -open
+  Mdexp_stdlib)
+ (libraries mdexp_stdlib print-table)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect)))
+
+; code_with_blank_lines
+
+(rule
+ (target code_with_blank_lines.output)
+ (deps code_with_blank_lines.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff code_with_blank_lines.md code_with_blank_lines.output)))
+
+; single_line_directives
+
+(rule
+ (target single_line_directives.output)
+ (deps single_line_directives.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff single_line_directives.md single_line_directives.output)))
+
+; snapshot_block_test
+
+(rule
+ (target snapshot_block_test.output)
+ (deps snapshot_block_test.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff snapshot_block_test.md snapshot_block_test.output)))
+
+; snapshot_examples
+
+(rule
+ (target snapshot_examples.output)
+ (deps snapshot_examples.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff snapshot_examples.md snapshot_examples.output)))
+
+; table_examples
+
+(rule
+ (target table_examples.output)
+ (deps table_examples.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff table_examples.md table_examples.output)))
+
+; test_closing
+
+(rule
+ (target test_closing.output)
+ (deps test_closing.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff test_closing.md test_closing.output)))
+
+; test_string_utils
+
+(rule
+ (target test_string_utils.output)
+ (deps test_string_utils.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff test_string_utils.md test_string_utils.output)))

@@ -1,0 +1,20 @@
+[book]
+title = "Introduction to mdexp"
+authors = ["Mathieu Barbin"]
+description = "A short introduction to literate programming with embedded snapshots"
+language = "en"
+src = "."
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/mbarbin/mdexp"
+theme = "../shared-theme"
+additional-js = ["../shared-theme/ansi-plugin.js"]
+
+[output.html.fold]
+enable = true
+level = 0

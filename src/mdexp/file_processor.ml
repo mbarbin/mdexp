@@ -17,7 +17,9 @@ end
 type t =
   { snapshot_formats : Snapshot_format.t list
   ; line_processor : Line_processor.t
+  ; default_code_lang : Markdown_lang_id.t
   ; mutable snapshot_defaults : Snapshot_config.t
+  ; mutable code_defaults : Code_config.t
   ; mutable processing_state : Processing_state.t
   ; output : Buffer.t
   ; mutable prose_buffer : string list
@@ -34,7 +36,9 @@ let create ~file_cache ~host_language =
   let output = Buffer.create 4096 in
   { snapshot_formats
   ; line_processor
+  ; default_code_lang
   ; snapshot_defaults = Snapshot_config.default
+  ; code_defaults = Code_config.default
   ; processing_state = Lines
   ; output
   ; prose_buffer = []
@@ -43,7 +47,11 @@ let create ~file_cache ~host_language =
 ;;
 
 let flush_prose (t : t) =
-  let lines = List.rev t.prose_buffer |> Render_engine.trim_blank_lines in
+  let lines =
+    List.rev t.prose_buffer
+    |> Render_engine.trim_blank_lines
+    |> Render_engine.dedent_lines
+  in
   List.iter lines ~f:(fun line ->
     Buffer.add_string t.output line;
     Buffer.add_char t.output '\n');
@@ -72,6 +80,20 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
   | Flush_prose -> flush_prose t
   | Flush_code -> flush_code t
   | Blank_separator -> Buffer.add_char t.output '\n'
+  | Enter_code lj_opt ->
+    let code_config =
+      match lj_opt with
+      | None -> t.code_defaults
+      | Some lj -> Code_config.of_located_json ~defaults:t.code_defaults lj
+    in
+    let language =
+      match code_config.lang with
+      | Some lang -> lang
+      | None -> t.default_code_lang
+    in
+    Buffer.add_string t.output "```";
+    Buffer.add_string t.output (Markdown_lang_id.to_string language);
+    Buffer.add_char t.output '\n'
   | Enter_snapshot lj_opt ->
     let snapshot_config =
       match lj_opt with
@@ -93,6 +115,13 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
           <- Snapshot_config.of_located_json
                ~defaults:t.snapshot_defaults
                (Located_json.with_json lj snapshot_json)
+        | Some _ | None -> ());
+       (match List.assoc_opt "code" fields with
+        | Some (`Assoc _ as code_json) ->
+          t.code_defaults
+          <- Code_config.of_located_json
+               ~defaults:t.code_defaults
+               (Located_json.with_json lj code_json)
         | Some _ | None -> ())
      | _ -> ())
 ;;

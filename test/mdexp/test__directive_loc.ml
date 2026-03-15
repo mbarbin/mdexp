@@ -22,13 +22,13 @@ let with_locs_shown f =
 
 let%expect_test "location covers the directive keyword and trailing text" =
   with_locs_shown (fun () ->
-    let file_contents = "@mdexp.code bash\n" in
-    let content = "@mdexp.code bash" in
+    let file_contents = {|@mdexp.code { lang: "bash" }|} ^ "\n" in
+    let content = {|@mdexp.code { lang: "bash" }|} in
     let file_cache = Loc.File_cache.create ~path:(Fpath.v "test.ml") ~file_contents in
     let result = Directive.parse_line ~content ~file_cache ~line:1 ~col:0 in
     Option.iter result ~f:(fun (d : Directive.With_trailing.t) ->
       print_endline (Loc.to_string d.loc)));
-  [%expect {|File "test.ml", line 1, characters 0-16:|}]
+  [%expect {| File "test.ml", line 1, characters 0-28: |}]
 ;;
 
 let%expect_test "location with leading whitespace in content" =
@@ -52,16 +52,16 @@ start_offset=2 stop_offset=8|}]
 
 let%expect_test "location with col offset (simulating comment stripping)" =
   with_locs_shown (fun () ->
-    (* Simulate: original line is "(* @mdexp.code bash *)"
-       After stripping "(* ", the content is "@mdexp.code bash", col=3. *)
-    let file_contents = "(* @mdexp.code bash *)\n" in
-    let content = "@mdexp.code bash" in
+    (* Simulate: original line is "(* @mdexp.code { lang: "bash" } *)"
+       After stripping "(* ", the content is the directive, col=3. *)
+    let file_contents = {|(* @mdexp.code { lang: "bash" } *)|} ^ "\n" in
+    let content = {|@mdexp.code { lang: "bash" }|} in
     let col = 3 in
     let file_cache = Loc.File_cache.create ~path:(Fpath.v "test.ml") ~file_contents in
     let result = Directive.parse_line ~content ~file_cache ~line:1 ~col in
     Option.iter result ~f:(fun (d : Directive.With_trailing.t) ->
       print_endline (Loc.to_string d.loc)));
-  [%expect {|File "test.ml", line 1, characters 3-19:|}]
+  [%expect {| File "test.ml", line 1, characters 3-31: |}]
 ;;
 
 let%expect_test "location on second line of file" =
@@ -80,14 +80,14 @@ let%expect_test "location on second line of file" =
 
 let%expect_test "location for line comment (Rust-style)" =
   with_locs_shown (fun () ->
-    let file_contents = "// @mdexp.code rust\n" in
-    let content = "@mdexp.code rust" in
+    let file_contents = {|// @mdexp.code { lang: "rust" }|} ^ "\n" in
+    let content = {|@mdexp.code { lang: "rust" }|} in
     let col = 3 in
     let file_cache = Loc.File_cache.create ~path:(Fpath.v "test.rs") ~file_contents in
     let result = Directive.parse_line ~content ~file_cache ~line:1 ~col in
     Option.iter result ~f:(fun (d : Directive.With_trailing.t) ->
       print_endline (Loc.to_string d.loc)));
-  [%expect {|File "test.rs", line 1, characters 3-19:|}]
+  [%expect {| File "test.rs", line 1, characters 3-31: |}]
 ;;
 
 (* -- Error reporting with locations -- *)

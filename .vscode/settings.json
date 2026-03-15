@@ -6,15 +6,23 @@
     },
     "cSpell.words": [
         "Barbin",
+        "cmxs",
         "decr",
         "endline",
         "Fpath",
         "ltrim",
         "Mathieu",
         "mbarbin",
+        "mdbook",
         "mdexp",
+        "noprompt",
         "rtrim",
+        "runtest",
         "sexp",
+        "shexp",
+        "sprintf",
+        "stdlib",
+        "toplevel",
         "unflushed",
         "Yojson"
     ]

@@ -7,3 +7,11 @@
   (dune
    (instrumentation
     (backend bisect_ppx)))))
+
+(rule
+ (cond
+  ((path
+    (glob src/mdexp/**))
+   (enforce
+    (dune
+     (preprocess no_preprocessing))))))

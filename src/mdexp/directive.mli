@@ -9,8 +9,9 @@
     A directive is recognized only when it is the first word on a comment line
     (after the comment marker and whitespace). Depending on the directive, the
     line parser enters a mode that determines how subsequent comment lines are
-    interpreted — as prose, as code, or as JSON5 configuration (for [Snapshot]
-    and [Config] directives whose trailing text begins a [{...}] object). *)
+    interpreted — as prose, as code, or as JSON5 configuration (for [Code],
+    [Snapshot] and [Config] directives whose trailing text begins a [{...}]
+    object). *)
 type t =
   | Prose
   | Code

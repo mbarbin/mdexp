@@ -8,6 +8,7 @@ include module type of struct
   include ListLabels
 end
 
+val exists : 'a list -> f:('a -> bool) -> bool
 val filter : 'a list -> f:('a -> bool) -> 'a list
 val iter : 'a list -> f:('a -> unit) -> unit
 val map : 'a list -> f:('a -> 'b) -> 'b list

@@ -10,6 +10,7 @@ module Located_json = Located_json
 module Markdown_lang_id = Markdown_lang_id
 
 module Private = struct
+  module Code_config = Code_config
   module Comment_syntax = Comment_syntax
   module Directive = Directive
   module Json5_accumulator = Json5_accumulator

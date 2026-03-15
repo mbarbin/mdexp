@@ -4,8 +4,9 @@ synopsis: "Literate Programming with Embedded Snapshots"
 maintainer: ["Mathieu Barbin <opensource@mbarbin.org>"]
 authors: ["Mathieu Barbin"]
 license: "LGPL-3.0-or-later WITH LGPL-3.0-linking-exception"
-homepage: "https://codeberg.org/mdexp/ocaml-mdexp"
-bug-reports: "https://codeberg.org/mdexp/ocaml-mdexp/issues"
+homepage: "https://github.com/mbarbin/mdexp"
+doc: "https://mbarbin.github.io/mdexp/"
+bug-reports: "https://github.com/mbarbin/mdexp/issues"
 depends: [
   "dune" {>= "3.20"}
   "ocaml" {>= "5.2"}
@@ -38,5 +39,5 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://codeberg.org/mdexp/ocaml-mdexp.git"
+dev-repo: "git+https://github.com/mbarbin/mdexp.git"
 x-maintenance-intent: ["(latest)"]

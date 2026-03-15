@@ -23,10 +23,8 @@ let%expect_test "Directive.parse_line" =
   [%expect {|Some { directive = Prose; trailing = Some "# Title"; loc = "_" }|}];
   test "@mdexp.code";
   [%expect {|Some { directive = Code; trailing = None; loc = "_" }|}];
-  test "@mdexp.code bash";
-  [%expect {|Some { directive = Code; trailing = Some "bash"; loc = "_" }|}];
-  test "@mdexp.code ocaml extra";
-  [%expect {|Some { directive = Code; trailing = Some "ocaml extra"; loc = "_" }|}];
+  test {|@mdexp.code { lang: "bash" }|};
+  [%expect {|Some { directive = Code; trailing = Some "{ lang: \"bash\" }"; loc = "_" }|}];
   test "@mdexp.end";
   [%expect {|Some { directive = End; trailing = None; loc = "_" }|}];
   test "@mdexp.snapshot";
@@ -44,6 +42,6 @@ let%expect_test "Directive.parse_line" =
   [%expect {|None|}];
   test "  @mdexp  ";
   [%expect {|Some { directive = Prose; trailing = None; loc = "_" }|}];
-  test "  @mdexp.code   bash  ";
-  [%expect {|Some { directive = Code; trailing = Some "bash"; loc = "_" }|}]
+  test {|  @mdexp.code   { lang: "bash" }  |};
+  [%expect {|Some { directive = Code; trailing = Some "{ lang: \"bash\" }"; loc = "_" }|}]
 ;;

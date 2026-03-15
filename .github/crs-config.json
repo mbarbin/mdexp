@@ -5,5 +5,5 @@
     "mbarbin"
   ],
   "invalid_crs_annotation_severity": "Error",
-  "crs_due_now_annotation_severity": "Warning"
+  "crs_due_now_annotation_severity": "Info"
 }

@@ -14,6 +14,7 @@ module Action = struct
     | Flush_code
     | Blank_separator
     | Enter_snapshot of Located_json.t option
+    | Enter_code of Located_json.t option
     | Configure of Located_json.t
 
   let json_to_dyn json = Dyn.string (Yojson.Basic.to_string json)
@@ -30,6 +31,8 @@ module Action = struct
     | Blank_separator -> Dyn.variant "Blank_separator" []
     | Enter_snapshot lj_opt ->
       Dyn.variant "Enter_snapshot" [ Dyn.option located_json_to_dyn lj_opt ]
+    | Enter_code lj_opt ->
+      Dyn.variant "Enter_code" [ Dyn.option located_json_to_dyn lj_opt ]
     | Configure lj -> Dyn.variant "Configure" [ located_json_to_dyn lj ]
   ;;
 end
@@ -234,13 +237,14 @@ let classify_line ~file_cache ~line_number ~comment_syntax ~in_block_comment lin
 
 type inline_config_origin =
   | Snapshot
+  | Code
   | Config
 
 module Mode = struct
   type t =
     | Ignore
     | Prose
-    | Code_block of { language : Markdown_lang_id.t }
+    | Code_block
     | Accumulating_inline_config of
         { origin : inline_config_origin
         ; accumulator : Json5_accumulator.t
@@ -256,23 +260,29 @@ let try_parse_located_json5 ~file_cache ~accumulator text =
 let emit_inline_config_action origin located_json =
   match origin with
   | Snapshot -> Action.Enter_snapshot (Some located_json)
+  | Code -> Action.Enter_code (Some located_json)
   | Config -> Action.Configure located_json
+;;
+
+let mode_after_config = function
+  | Snapshot | Config -> Mode.Ignore
+  | Code -> Mode.Code_block
+;;
+
+let fallback_action = function
+  | Snapshot -> [ Action.Enter_snapshot None ]
+  | Code -> [ Action.Enter_code None ]
+  | Config -> []
 ;;
 
 let finalize_accumulator ~file_cache origin accumulator =
   let contents = Json5_accumulator.buffer_contents accumulator in
   if String.is_empty (String.trim contents)
-  then (
-    match origin with
-    | Snapshot -> [ Action.Enter_snapshot None ]
-    | Config -> [])
+  then fallback_action origin
   else (
     match try_parse_located_json5 ~file_cache ~accumulator contents with
     | Some lj -> [ emit_inline_config_action origin lj ]
-    | None ->
-      (match origin with
-       | Snapshot -> [ Enter_snapshot None ]
-       | Config -> []))
+    | None -> fallback_action origin)
 ;;
 
 let close_current_block ~file_cache (mode : Mode.t) =
@@ -281,45 +291,28 @@ let close_current_block ~file_cache (mode : Mode.t) =
   | Accumulating_inline_config { origin; accumulator } ->
     finalize_accumulator ~file_cache origin accumulator
   | Prose -> [ Action.Flush_prose; Blank_separator ]
-  | Code_block _ -> [ Flush_code; Close_code_fence; Blank_separator ]
+  | Code_block -> [ Flush_code; Close_code_fence; Blank_separator ]
 ;;
 
 let start_inline_config ~file_cache ~file_offset ~origin ~inline ~close_actions =
+  let mode_done = mode_after_config origin in
   match inline with
   | None ->
     (match origin with
-     | Snapshot -> Mode.Ignore, close_actions @ [ Action.Enter_snapshot None ]
      | Config ->
        let acc = Json5_accumulator.create () in
-       Accumulating_inline_config { origin; accumulator = acc }, close_actions)
+       Mode.Accumulating_inline_config { origin; accumulator = acc }, close_actions
+     | Snapshot | Code -> mode_done, close_actions @ fallback_action origin)
   | Some s ->
     let acc = Json5_accumulator.create () in
     (match Json5_accumulator.feed acc ~file_offset ~line:s with
      | Done { json_text } ->
        (match try_parse_located_json5 ~file_cache ~accumulator:acc json_text with
-        | Some lj -> Mode.Ignore, close_actions @ [ emit_inline_config_action origin lj ]
-        | None ->
-          (match origin with
-           | Snapshot -> Ignore, close_actions @ [ Enter_snapshot None ]
-           | Config -> Ignore, close_actions))
+        | Some lj -> mode_done, close_actions @ [ emit_inline_config_action origin lj ]
+        | None -> mode_done, close_actions @ fallback_action origin)
      | Need_more ->
        Accumulating_inline_config { origin; accumulator = acc }, close_actions
-     | Error ->
-       (match origin with
-        | Snapshot -> Ignore, close_actions @ [ Enter_snapshot None ]
-        | Config -> Ignore, close_actions))
-;;
-
-let parse_language_trailing trailing ~default_code_lang =
-  match trailing with
-  | None -> default_code_lang
-  | Some rest ->
-    let first_word =
-      match String.index_opt rest ' ' with
-      | Some i -> String.sub rest ~pos:0 ~len:i
-      | None -> rest
-    in
-    Markdown_lang_id.of_string first_word
+     | Error -> mode_done, close_actions @ fallback_action origin)
 ;;
 
 let compute_file_offset ~file_cache ~line_number ~col =
@@ -327,11 +320,22 @@ let compute_file_offset ~file_cache ~line_number ~col =
   Loc.start_offset line_loc + col
 ;;
 
+let start_directive_inline_config ~file_cache ~mode ~origin ~trailing ~loc =
+  let close_actions = close_current_block ~file_cache mode in
+  let trailing_len =
+    match trailing with
+    | None -> 0
+    | Some s -> String.length s
+  in
+  let file_offset = Loc.stop_offset loc - trailing_len in
+  start_inline_config ~file_cache ~file_offset ~origin ~inline:trailing ~close_actions
+;;
+
 let transition
       ~file_cache
       ~line_number
       ~(mode : Mode.t)
-      ~default_code_lang
+      ~default_code_lang:_
       (input : Classified_line.t)
   =
   match input with
@@ -351,41 +355,12 @@ let transition
       if is_single_line_block && Option.is_some trailing then Mode.Ignore else Prose
     in
     new_mode, close_actions @ enter_actions @ flush_actions
-  | Directive { directive = Code; trailing; is_single_line_block = _; loc = _; col = _ }
-    ->
-    let close_actions = close_current_block ~file_cache mode in
-    let lang = parse_language_trailing trailing ~default_code_lang in
-    ( Code_block { language = lang }
-    , close_actions @ [ Open_code_fence { language = lang } ] )
+  | Directive { directive = Code; trailing; is_single_line_block = _; loc; col = _ } ->
+    start_directive_inline_config ~file_cache ~mode ~origin:Code ~trailing ~loc
   | Directive { directive = Snapshot; trailing; is_single_line_block = _; loc; col = _ }
-    ->
-    let close_actions = close_current_block ~file_cache mode in
-    let trailing_len =
-      match trailing with
-      | None -> 0
-      | Some s -> String.length s
-    in
-    let file_offset = Loc.stop_offset loc - trailing_len in
-    start_inline_config
-      ~file_cache
-      ~file_offset
-      ~origin:Snapshot
-      ~inline:trailing
-      ~close_actions
+    -> start_directive_inline_config ~file_cache ~mode ~origin:Snapshot ~trailing ~loc
   | Directive { directive = Config; trailing; is_single_line_block = _; loc; col = _ } ->
-    let close_actions = close_current_block ~file_cache mode in
-    let trailing_len =
-      match trailing with
-      | None -> 0
-      | Some s -> String.length s
-    in
-    let file_offset = Loc.stop_offset loc - trailing_len in
-    start_inline_config
-      ~file_cache
-      ~file_offset
-      ~origin:Config
-      ~inline:trailing
-      ~close_actions
+    start_directive_inline_config ~file_cache ~mode ~origin:Config ~trailing ~loc
   | Directive
       { directive = End; is_single_line_block = _; trailing = _; loc = _; col = _ } ->
     let close_actions = close_current_block ~file_cache mode in
@@ -393,7 +368,8 @@ let transition
   | Block_closer ->
     (match mode with
      | Accumulating_inline_config { origin; accumulator } ->
-       Ignore, finalize_accumulator ~file_cache origin accumulator
+       mode_after_config origin, finalize_accumulator ~file_cache origin accumulator
+     | Code_block -> Code_block, []
      | _ ->
        let close_actions = close_current_block ~file_cache mode in
        Ignore, close_actions)
@@ -402,25 +378,26 @@ let transition
      | Ignore -> Ignore, []
      | Accumulating_inline_config { origin; accumulator } ->
        let file_offset = compute_file_offset ~file_cache ~line_number ~col in
+       let done_mode = mode_after_config origin in
        (match Json5_accumulator.feed accumulator ~file_offset ~line:content with
         | Done { json_text } ->
           (match try_parse_located_json5 ~file_cache ~accumulator json_text with
-           | Some lj -> Ignore, [ emit_inline_config_action origin lj ]
-           | None -> Ignore, [])
+           | Some lj -> done_mode, [ emit_inline_config_action origin lj ]
+           | None -> done_mode, fallback_action origin)
         | Need_more ->
           if ends_block
-          then Ignore, finalize_accumulator ~file_cache origin accumulator
+          then done_mode, finalize_accumulator ~file_cache origin accumulator
           else mode, []
         | Error ->
           if ends_block
-          then Ignore, finalize_accumulator ~file_cache origin accumulator
+          then done_mode, finalize_accumulator ~file_cache origin accumulator
           else mode, [])
      | Prose ->
        let actions = [ Action.Emit_prose_line content ] in
        if ends_block
        then Ignore, actions @ [ Flush_prose; Blank_separator ]
        else Prose, actions
-     | Code_block _ ->
+     | Code_block ->
        let content_to_use =
          if from_line_comment
          then raw_line
@@ -438,9 +415,9 @@ let transition
        else mode, actions)
   | Non_comment { content } ->
     (match mode with
-     | Code_block _ -> mode, [ Action.Emit_code_line content ]
+     | Code_block -> mode, [ Action.Emit_code_line content ]
      | Accumulating_inline_config { origin; accumulator } ->
-       Ignore, finalize_accumulator ~file_cache origin accumulator
+       mode_after_config origin, finalize_accumulator ~file_cache origin accumulator
      | _ -> mode, [])
 ;;
 
@@ -492,7 +469,7 @@ let flush t =
   match t.mode with
   | Ignore -> []
   | Prose -> [ Action.Flush_prose ]
-  | Code_block _ -> [ Flush_code; Close_code_fence ]
+  | Code_block -> [ Flush_code; Close_code_fence ]
   | Accumulating_inline_config { origin; accumulator } ->
     finalize_accumulator ~file_cache:t.file_cache origin accumulator
 ;;

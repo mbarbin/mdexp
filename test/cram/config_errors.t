@@ -146,6 +146,61 @@ Wrong type in @mdexp.config snapshot sub-object.
   output
   [123]
 
+Unknown field in code config.
+
+  $ cat > test.ml << 'EOF'
+  > (* @mdexp.code { language: "bash" } *)
+  > (* echo hello *)
+  > (* @mdexp.end *)
+  > EOF
+
+  $ mdexp pp test.ml
+  File "test.ml", line 1, characters 17-25:
+  1 | (* @mdexp.code { language: "bash" } *)
+                       ^^^^^^^^
+  Error: Unknown field "language" in code configuration.
+  ```ocaml
+  echo hello
+  ```
+  [123]
+
+Wrong type for "lang" in code config: integer instead of string.
+
+  $ cat > test.ml << 'EOF'
+  > (* @mdexp.code { lang: 42 } *)
+  > (* echo hello *)
+  > (* @mdexp.end *)
+  > EOF
+
+  $ mdexp pp test.ml
+  File "test.ml", line 1, characters 23-25:
+  1 | (* @mdexp.code { lang: 42 } *)
+                             ^^
+  Error: Field "lang" expects a string value.
+  ```ocaml
+  echo hello
+  ```
+  [123]
+
+Unknown field in @mdexp.config code sub-object.
+
+  $ cat > test.ml << 'EOF'
+  > (* @mdexp.config { code: { language: "bash" } } *)
+  > (* @mdexp.code *)
+  > (* echo hello *)
+  > (* @mdexp.end *)
+  > EOF
+
+  $ mdexp pp test.ml
+  File "test.ml", line 1, characters 27-35:
+  1 | (* @mdexp.config { code: { language: "bash" } } *)
+                                 ^^^^^^^^
+  Error: Unknown field "language" in code configuration.
+  ```ocaml
+  echo hello
+  ```
+  [123]
+
 Valid configs produce no errors.
 
   $ cat > test.ml << 'EOF'
@@ -187,4 +242,27 @@ Valid configs produce no errors.
   $ mdexp pp test.ml
   ```json
   data
+  ```
+
+  $ cat > test.ml << 'EOF'
+  > (* @mdexp.code { lang: "bash" } *)
+  > (* echo hello *)
+  > (* @mdexp.end *)
+  > EOF
+
+  $ mdexp pp test.ml
+  ```bash
+  echo hello
+  ```
+
+  $ cat > test.ml << 'EOF'
+  > (* @mdexp.config { code: { lang: "bash" } } *)
+  > (* @mdexp.code *)
+  > (* echo hello *)
+  > (* @mdexp.end *)
+  > EOF
+
+  $ mdexp pp test.ml
+  ```bash
+  echo hello
   ```

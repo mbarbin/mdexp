@@ -1,0 +1,126 @@
+(data_only_dirs book)
+
+(library
+ (name mdexp_introduction)
+ (package mdexp-dev)
+ (modules
+  (:standard \ windtrap_snapshots))
+ (inline_tests
+  (deps %{bin:mdexp}))
+ (flags
+  :standard
+  -w
+  +a-4-40-41-42-44-45-48-66
+  -warn-error
+  +a
+  -open
+  Mdexp_stdlib)
+ (libraries mdexp_stdlib windtrap)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_windtrap)))
+
+(executable
+ (name windtrap_snapshots)
+ (instrumentation
+  (backend bisect_ppx))
+ (modules windtrap_snapshots)
+ (flags :standard -w +a-4-40-41-42-44-45-48-66 -warn-error +a)
+ (libraries windtrap))
+
+; -- introduction --
+
+(rule
+ (target introduction.output)
+ (deps introduction.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff introduction.md introduction.output)))
+
+; -- prose --
+
+(rule
+ (target prose.output)
+ (deps prose.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff prose.md prose.output)))
+
+; -- code_blocks --
+
+(rule
+ (target code_blocks.output)
+ (deps code_blocks.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff code_blocks.md code_blocks.output)))
+
+; -- snapshots --
+
+(rule
+ (target snapshots.output)
+ (deps snapshots.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff snapshots.md snapshots.output)))
+
+; -- ppx_expect_snapshots --
+
+(rule
+ (target ppx_expect_snapshots.output)
+ (deps ppx_expect_snapshots.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff ppx_expect_snapshots.md ppx_expect_snapshots.output)))
+
+; -- windtrap_snapshots --
+
+(rule
+ (target windtrap_snapshots.output)
+ (deps windtrap_snapshots.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff windtrap_snapshots.md windtrap_snapshots.output)))
