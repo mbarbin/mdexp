@@ -22,7 +22,7 @@
  (synopsis "Literate Programming with Embedded Snapshots")
  (depends
   (ocaml
-   (>= 5.2))
+   (>= 5.3))
   (cmdlang
    (>= 0.0.10))
   (cmdlang-cmdliner-err-runner
@@ -55,7 +55,7 @@
  (synopsis "Tests for mdexp")
  (depends
   (ocaml
-   (>= 5.2))
+   (>= 5.3))
   (mdexp
    (= :version))
   (pplumbing-err
@@ -83,7 +83,7 @@
  (allow_empty)
  (depends
   (ocaml
-   (>= 5.2))
+   (>= 5.3))
   (ocamlformat
    (= 0.28.1))
   (bisect_ppx
