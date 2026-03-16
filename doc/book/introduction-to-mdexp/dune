@@ -21,8 +21,9 @@
  (preprocess
   (pps ppx_windtrap)))
 
-(executable
+(test
  (name windtrap_snapshots)
+ (package mdexp-dev)
  (instrumentation
   (backend bisect_ppx))
  (modules windtrap_snapshots)
