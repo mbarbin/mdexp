@@ -30,16 +30,16 @@ to type-check your documentation examples:
 
 ```ocaml
 (* @mdexp.code *)
-let meaning_of_life = 42
-let () = Printf.printf "The answer is %d\n" meaning_of_life
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 ```
 
 The code is included as-is:
 
 ```ocaml
-let meaning_of_life = 42
-let () = Printf.printf "The answer is %d\n" meaning_of_life
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 ```
 
 ## Explicit Language

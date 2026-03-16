@@ -4,17 +4,17 @@
 (*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
 (********************************************************************************)
 
-(* @mdexp # Code Blocks *)
-
 (* @mdexp
+
+# Code Blocks
+
 Use `@mdexp.code` to include code examples in your documentation.
 The extracted code is wrapped in a fenced code block, with `ocaml`
 as the default language.
 
 ## Code in Comments
 
-Write code inside comment wrappers. mdexp strips the markers:
-@mdexp.end *)
+Write code inside comment wrappers. mdexp strips the markers: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
@@ -34,19 +34,19 @@ let _ =
 (* @mdexp.end *)
 
 (* @mdexp
+
 ## Actual Code
 
 Code between the directives can also be real, compilable OCaml ---
 not wrapped in comments. This is useful when you want the compiler
-to type-check your documentation examples:
-@mdexp.end *)
+to type-check your documentation examples: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
   {|
 (* @mdexp.code *)
-let meaning_of_life = 42
-let () = Printf.printf "The answer is %d\n" meaning_of_life
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 |}
 ;;
@@ -54,15 +54,17 @@ let () = Printf.printf "The answer is %d\n" meaning_of_life
 (* @mdexp The code is included as-is: *)
 
 (* @mdexp.code *)
-let meaning_of_life = 42
-let () = Printf.printf "The answer is %d\n" meaning_of_life
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 
+let _ = question_of_life
+
 (* @mdexp
+
 ## Explicit Language
 
-Override the default language tag with `@mdexp.code { lang: "<lang>" }`:
-@mdexp.end *)
+Override the default language tag with `@mdexp.code { lang: "<lang>" }`: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
@@ -79,12 +81,12 @@ let _ =
 (* opam install mdexp *)
 (* @mdexp.end *)
 
-(* @mdexp *)
-(* ## Prose to Code Transition *)
-(* *)
-(* A block comment can transition directly from prose into a code block *)
-(* using `@mdexp.code` before the block comment closes: *)
-(* @mdexp.end *)
+(* @mdexp
+
+## Prose to Code Transition
+
+A block comment can transition directly from prose into a code block
+using `@mdexp.code` before the block comment closes: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
@@ -98,8 +100,10 @@ let hello () = print_endline "Hello!"
 ;;
 
 (* @mdexp
+
 This outputs the prose followed by the code block, without needing
 separate comments:
+
 @mdexp.code *)
 
 let (_ : unit -> unit) = fun () -> print_endline "Hello!"
