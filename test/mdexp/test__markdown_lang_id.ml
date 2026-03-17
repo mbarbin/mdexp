@@ -1,8 +1,8 @@
-(********************************************************************************)
-(*  mdexp - Literate Programming with Embedded Snapshots                        *)
-(*  Copyright (C) 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>           *)
-(*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
-(********************************************************************************)
+(*********************************************************************************)
+(*  mdexp - Literate Programming with Embedded Snapshots                         *)
+(*  SPDX-FileCopyrightText: 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>  *)
+(*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception   *)
+(*********************************************************************************)
 
 let%expect_test "to_string" =
   List.iter Host_language.all ~f:(fun host_language ->

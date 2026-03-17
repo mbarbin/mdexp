@@ -1,8 +1,8 @@
-(********************************************************************************)
-(*  mdexp - Literate Programming with Embedded Snapshots                        *)
-(*  Copyright (C) 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>           *)
-(*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
-(********************************************************************************)
+(*********************************************************************************)
+(*  mdexp - Literate Programming with Embedded Snapshots                         *)
+(*  SPDX-FileCopyrightText: 2025-2026 Mathieu Barbin <mathieu.barbin@gmail.com>  *)
+(*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception   *)
+(*********************************************************************************)
 
 (* Position association list for all JSON nodes, keyed by physical identity.
    We store every key string position by (key_name, Loc.t) and every value
