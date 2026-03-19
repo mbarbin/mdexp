@@ -85,7 +85,7 @@
   (ocaml
    (>= 5.3))
   (ocamlformat
-   (= 0.28.1))
+   (= 0.29.0))
   (bisect_ppx
    (>= 2.8.3))
   (mdexp
