@@ -19,7 +19,6 @@
         "rtrim",
         "runtest",
         "sexp",
-        "shexp",
         "sprintf",
         "stdlib",
         "toplevel",

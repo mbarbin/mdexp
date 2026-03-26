@@ -19,7 +19,7 @@
   +a
   -open
   Mdexp_stdlib)
- (libraries mdexp_stdlib shexp.process unix)
+ (libraries mdexp_stdlib unix)
  (instrumentation
   (backend bisect_ppx))
  (preprocess
