@@ -20,6 +20,7 @@ val create
 module Action : sig
   type t =
     | Emit_prose_line of string
+    | Emit_prose_line_inline of string
     | Emit_code_line of string
     | Close_code_fence
     | Flush_prose

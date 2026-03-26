@@ -13,7 +13,7 @@ let trim_blank_lines lines =
   lines |> drop_while_blank |> List.rev |> drop_while_blank |> List.rev
 ;;
 
-let dedent_lines lines =
+let dedent_lines ~first_line_is_inline lines =
   let count_leading_whitespace line =
     let len = String.length line in
     let i = ref 0 in
@@ -22,8 +22,16 @@ let dedent_lines lines =
     done;
     !i
   in
+  let lines_for_indent =
+    if first_line_is_inline
+    then (
+      match lines with
+      | _ :: rest -> rest
+      | [] -> [])
+    else lines
+  in
   let min_indent =
-    List.fold_left lines ~init:None ~f:(fun acc line ->
+    List.fold_left lines_for_indent ~init:None ~f:(fun acc line ->
       let trimmed = String.trim line in
       if String.is_empty trimmed
       then acc
@@ -33,14 +41,21 @@ let dedent_lines lines =
         | None -> Some indent
         | Some current_min -> Some (Int.min current_min indent)))
   in
-  match min_indent with
-  | None | Some 0 -> lines
-  | Some indent_to_remove ->
-    List.map lines ~f:(fun line ->
+  let dedent_line line =
+    match min_indent with
+    | None | Some 0 -> line
+    | Some indent_to_remove ->
       if String.length line >= indent_to_remove
       then
         String.sub line ~pos:indent_to_remove ~len:(String.length line - indent_to_remove)
-      else line)
+      else line
+  in
+  if first_line_is_inline
+  then (
+    match lines with
+    | first :: rest -> String.ltrim first :: List.map rest ~f:dedent_line
+    | [] -> [])
+  else List.map lines ~f:dedent_line
 ;;
 
 let count_leading_backticks line =
@@ -61,7 +76,7 @@ let compute_fence_length lines =
 ;;
 
 let render_snapshot ~output ~(snapshot_config : Snapshot_config.t) ~lines =
-  let lines = lines |> trim_blank_lines |> dedent_lines in
+  let lines = lines |> trim_blank_lines |> dedent_lines ~first_line_is_inline:false in
   if snapshot_config.block
   then (
     let fence_len = compute_fence_length lines in

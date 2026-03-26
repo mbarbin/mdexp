@@ -49,7 +49,7 @@ let%expect_test "OCaml: single-line prose directive" =
     feed t "(* @mdexp # Title *)";
     [%expect
       {|
-      Emit_prose_line "# Title"
+      Emit_prose_line_inline "# Title"
       Flush_prose
       Blank_separator
       |}];
@@ -62,7 +62,7 @@ let%expect_test "OCaml: single-line prose with whitespaces" =
     feed t "(* @mdexp        # Title After Spaces*)";
     [%expect
       {|
-      Emit_prose_line "# Title After Spaces"
+      Emit_prose_line_inline "# Title After Spaces"
       Flush_prose
       Blank_separator
       |}];

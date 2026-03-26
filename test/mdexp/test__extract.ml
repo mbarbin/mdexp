@@ -296,6 +296,33 @@ let (_ : int) = 3
 
 (* -- Regression tests: indentation preservation -- *)
 
+let%expect_test "first line inline is excluded from dedent computation" =
+  let output =
+    extract
+      {|(* @mdexp # This is the first line.
+
+   This is the minimum indent here.
+
+       We use various indentation levels here.
+       Such as indented blocks.
+
+   This is all fine. *)
+|}
+  in
+  print_string output;
+  [%expect
+    {|
+    # This is the first line.
+
+    This is the minimum indent here.
+
+        We use various indentation levels here.
+        Such as indented blocks.
+
+    This is all fine.
+    |}]
+;;
+
 let%expect_test "prose preserves indentation for markdown list items" =
   let output =
     extract

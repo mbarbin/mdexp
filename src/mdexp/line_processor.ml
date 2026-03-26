@@ -7,6 +7,7 @@
 module Action = struct
   type t =
     | Emit_prose_line of string
+    | Emit_prose_line_inline of string
     | Emit_code_line of string
     | Close_code_fence
     | Flush_prose
@@ -21,6 +22,7 @@ module Action = struct
 
   let to_dyn = function
     | Emit_prose_line s -> Dyn.variant "Emit_prose_line" [ Dyn.string s ]
+    | Emit_prose_line_inline s -> Dyn.variant "Emit_prose_line_inline" [ Dyn.string s ]
     | Emit_code_line s -> Dyn.variant "Emit_code_line" [ Dyn.string s ]
     | Close_code_fence -> Dyn.variant "Close_code_fence" []
     | Flush_prose -> Dyn.variant "Flush_prose" []
@@ -341,7 +343,7 @@ let transition
     let close_actions = close_current_block ~file_cache mode in
     let enter_actions =
       match trailing with
-      | Some content -> [ Action.Emit_prose_line content ]
+      | Some content -> [ Action.Emit_prose_line_inline content ]
       | None -> []
     in
     let flush_actions =
