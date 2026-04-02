@@ -106,15 +106,14 @@ let read_stdout_until_sentinel ic =
        if String.equal (String.trim line) sentinel
        then (
          (* Consume the "- : unit = ()" response line *)
-         (try ignore (input_line ic : string) with
-          | End_of_file -> ());
+         ignore (input_line ic : string);
          raise_notrace Exit)
        else (
          if Buffer.length buf > 0 then Buffer.add_char buf '\n';
          Buffer.add_string buf line)
      done
    with
-   | Exit | End_of_file -> ());
+   | Exit -> ());
   Buffer.contents buf
 ;;
 
