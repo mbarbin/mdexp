@@ -21,7 +21,6 @@ module Action : sig
   type t =
     | Emit_prose_line of string
     | Emit_code_line of string
-    | Open_code_fence of { language : Markdown_lang_id.t }
     | Close_code_fence
     | Flush_prose
     | Flush_code

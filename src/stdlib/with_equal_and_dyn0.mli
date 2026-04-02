@@ -4,11 +4,9 @@
 (*_  SPDX-License-Identifier: MIT OR LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
 (*_**************************************************************************************)
 
-include module type of struct
-  include ListLabels
-end
+module type S = sig
+  type t
 
-val exists : 'a list -> f:('a -> bool) -> bool
-val iter : 'a list -> f:('a -> unit) -> unit
-val map : 'a list -> f:('a -> 'b) -> 'b list
-val fold_left : 'a list -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc
+  val equal : t -> t -> bool
+  val to_dyn : t -> Dyn.t
+end

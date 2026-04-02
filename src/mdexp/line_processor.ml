@@ -8,7 +8,6 @@ module Action = struct
   type t =
     | Emit_prose_line of string
     | Emit_code_line of string
-    | Open_code_fence of { language : Markdown_lang_id.t }
     | Close_code_fence
     | Flush_prose
     | Flush_code
@@ -18,13 +17,11 @@ module Action = struct
     | Configure of Located_json.t
 
   let json_to_dyn json = Dyn.string (Yojson.Basic.to_string json)
-  let located_json_to_dyn lj = json_to_dyn (Located_json.json lj)
+  let located_json_to_dyn lj = json_to_dyn (Located_json.json lj :> Yojson.Basic.t)
 
   let to_dyn = function
     | Emit_prose_line s -> Dyn.variant "Emit_prose_line" [ Dyn.string s ]
     | Emit_code_line s -> Dyn.variant "Emit_code_line" [ Dyn.string s ]
-    | Open_code_fence { language } ->
-      Dyn.variant "Open_code_fence" [ Markdown_lang_id.to_dyn language ]
     | Close_code_fence -> Dyn.variant "Close_code_fence" []
     | Flush_prose -> Dyn.variant "Flush_prose" []
     | Flush_code -> Dyn.variant "Flush_code" []
@@ -254,7 +251,8 @@ end
 let try_parse_located_json5 ~file_cache ~accumulator text =
   match Yojson_five.Basic.from_string text |> Result.to_option with
   | None -> None
-  | Some json -> Some (Located_json.create ~file_cache ~accumulator ~json)
+  | Some (`Assoc _ as json) -> Some (Located_json.create ~file_cache ~accumulator ~json)
+  | Some _ -> None
 ;;
 
 let emit_inline_config_action origin located_json =

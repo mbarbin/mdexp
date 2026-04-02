@@ -15,12 +15,12 @@
 
 type t
 
-(** The underlying JSON value. *)
-val json : t -> Yojson.Basic.t
+(** The underlying JSON object. *)
+val json : t -> Json_object.t
 
-(** Return a view focused on a different JSON node but sharing the same
+(** Return a view focused on a different JSON object but sharing the same
     position index. Useful for navigating into nested objects. *)
-val with_json : t -> Yojson.Basic.t -> t
+val with_json : t -> Json_object.t -> t
 
 (** Return the file-level location of a key by name, searching at all
     nesting levels. Returns the first match found. *)
@@ -36,5 +36,5 @@ val value_loc : t -> Yojson.Basic.t -> Loc.t option
 val create
   :  file_cache:Loc.File_cache.t
   -> accumulator:Json5_accumulator.t
-  -> json:Yojson.Basic.t
+  -> json:Json_object.t
   -> t

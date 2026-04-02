@@ -5,35 +5,23 @@
 (*********************************************************************************)
 
 type t =
-  { block : bool
-  ; lang : Markdown_lang_id.t option
+  { snapshot : Snapshot_config.t
+  ; code : Code_config.t
   }
 
-let equal a b =
-  phys_equal a b
-  ||
-  let { block; lang } = a in
-  Bool.equal block b.block && Option.equal Markdown_lang_id.equal lang b.lang
-;;
-
-let to_dyn { block; lang } =
-  Dyn.record [ "block", Dyn.bool block; "lang", Dyn.option Markdown_lang_id.to_dyn lang ]
-;;
-
-let default = { block = false; lang = None }
-let fields_spec = [ "block", `Block; "lang", `Lang ]
+let fields_spec = [ "snapshot", `Snapshot; "code", `Code ]
 let known_fields = List.map fields_spec ~f:fst
 
 let classify_field key =
   match List.assoc_opt key fields_spec with
-  | Some ((`Block | `Lang) as known) -> known
+  | Some ((`Snapshot | `Code) as known) -> known
   | None -> `Unknown
 ;;
 
 let of_located_json ~inherited (lj : Located_json.t) =
   let fields = Json_object.fields (Located_json.json lj) in
-  let block = ref inherited.block in
-  let lang = ref inherited.lang in
+  let snapshot = ref inherited.snapshot in
+  let code = ref inherited.code in
   List.iter fields ~f:(fun (key, value) ->
     match classify_field key with
     | `Unknown ->
@@ -43,31 +31,37 @@ let of_located_json ~inherited (lj : Located_json.t) =
         Pp.O.
           [ Pp.text "Unknown field "
             ++ Pp_tty.id (module String) key
-            ++ Pp.text " in snapshot configuration."
+            ++ Pp.text " in configuration."
           ]
-    | `Block ->
+    | `Snapshot ->
       (match value with
-       | `Bool b -> block := b
+       | `Assoc _ as snapshot_json ->
+         snapshot
+         := Snapshot_config.of_located_json
+              ~inherited:!snapshot
+              (Located_json.with_json lj snapshot_json)
        | _ ->
          Err.error
            ?loc:(Located_json.value_loc lj value)
            Pp.O.
              [ Pp.text "Field "
-               ++ Pp_tty.id (module String) "block"
-               ++ Pp.text " expects a boolean value."
+               ++ Pp_tty.id (module String) "snapshot"
+               ++ Pp.text " expects an object value."
              ])
-    | `Lang ->
+    | `Code ->
       (match value with
-       | `String s when not (String.is_empty s) ->
-         lang := Some (Markdown_lang_id.of_string s)
+       | `Assoc _ as code_json ->
+         code
+         := Code_config.of_located_json
+              ~inherited:!code
+              (Located_json.with_json lj code_json)
        | _ ->
          Err.error
            ?loc:(Located_json.value_loc lj value)
            Pp.O.
              [ Pp.text "Field "
-               ++ Pp_tty.id (module String) "lang"
-               ++ Pp.text " expects a non-empty string value."
+               ++ Pp_tty.id (module String) "code"
+               ++ Pp.text " expects an object value."
              ]));
-  let block = if Option.is_some !lang then true else !block in
-  { block; lang = !lang }
+  { snapshot = !snapshot; code = !code }
 ;;

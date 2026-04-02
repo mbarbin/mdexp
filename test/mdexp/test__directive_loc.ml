@@ -101,7 +101,7 @@ let%expect_test "error report with directive location" =
     let col = 3 in
     let file_cache = Loc.File_cache.create ~path:(Fpath.v "test.ml") ~file_contents in
     match Directive.parse_line ~content ~file_cache ~line:2 ~col with
-    | None -> ()
+    | None -> assert false
     | Some d ->
       Err.raise
         ~loc:d.loc
@@ -121,7 +121,7 @@ let%expect_test "error report for wrong field type" =
     let col = 3 in
     let file_cache = Loc.File_cache.create ~path:(Fpath.v "test.ml") ~file_contents in
     match Directive.parse_line ~content ~file_cache ~line:1 ~col with
-    | None -> ()
+    | None -> assert false
     | Some d ->
       Err.raise
         ~loc:d.loc

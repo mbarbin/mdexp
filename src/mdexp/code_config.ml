@@ -6,49 +6,49 @@
 
 type t = { lang : Markdown_lang_id.t option }
 
-let to_dyn { lang } = Dyn.record [ "lang", Dyn.option Markdown_lang_id.to_dyn lang ]
-let default = { lang = None }
-
-let of_json ?(defaults = default) (json : Yojson.Basic.t) =
-  match json with
-  | `Assoc fields ->
-    let lang =
-      match List.assoc_opt "lang" fields with
-      | Some (`String s) when not (String.is_empty s) ->
-        Some (Markdown_lang_id.of_string s)
-      | _ -> defaults.lang
-    in
-    { lang }
-  | _ -> defaults
+let equal a b =
+  phys_equal a b
+  ||
+  let { lang } = a in
+  Option.equal Markdown_lang_id.equal lang b.lang
 ;;
 
-let known_fields = [ "lang" ]
+let to_dyn { lang } = Dyn.record [ "lang", Dyn.option Markdown_lang_id.to_dyn lang ]
+let default = { lang = None }
+let fields_spec = [ "lang", `Lang ]
+let known_fields = List.map fields_spec ~f:fst
 
-let of_located_json ?(defaults = default) (lj : Located_json.t) =
-  let json = Located_json.json lj in
-  match json with
-  | `Assoc fields ->
-    List.iter fields ~f:(fun (key, value) ->
-      let is_known =
-        List.fold_left known_fields ~init:false ~f:(fun acc k ->
-          acc || String.equal key k)
-      in
-      if not is_known
-      then
-        Err.error
-          ?loc:(Located_json.key_loc lj key)
-          ~hints:(Err.did_you_mean key ~candidates:known_fields)
-          [ Pp.textf "Unknown field %S in code configuration." key ]
-      else (
-        match key with
-        | "lang" ->
-          (match value with
-           | `String _ -> ()
-           | _ ->
-             Err.error
-               ?loc:(Located_json.value_loc lj value)
-               [ Pp.text "Field \"lang\" expects a string value." ])
-        | _ -> ()));
-    of_json ~defaults json
-  | _ -> defaults
+let classify_field key =
+  match List.assoc_opt key fields_spec with
+  | Some (`Lang as known) -> known
+  | None -> `Unknown
+;;
+
+let of_located_json ~inherited (lj : Located_json.t) =
+  let fields = Json_object.fields (Located_json.json lj) in
+  let lang = ref inherited.lang in
+  List.iter fields ~f:(fun (key, value) ->
+    match classify_field key with
+    | `Unknown ->
+      Err.error
+        ?loc:(Located_json.key_loc lj key)
+        ~hints:(Err.did_you_mean key ~candidates:known_fields)
+        Pp.O.
+          [ Pp.text "Unknown field "
+            ++ Pp_tty.id (module String) key
+            ++ Pp.text " in code configuration."
+          ]
+    | `Lang ->
+      (match value with
+       | `String s when not (String.is_empty s) ->
+         lang := Some (Markdown_lang_id.of_string s)
+       | _ ->
+         Err.error
+           ?loc:(Located_json.value_loc lj value)
+           Pp.O.
+             [ Pp.text "Field "
+               ++ Pp_tty.id (module String) "lang"
+               ++ Pp.text " expects a non-empty string value."
+             ]));
+  { lang = !lang }
 ;;

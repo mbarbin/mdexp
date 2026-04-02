@@ -4,9 +4,16 @@
 (*  SPDX-License-Identifier: LGPL-3.0-or-later WITH LGPL-3.0-linking-exception   *)
 (*********************************************************************************)
 
-type t = string
+module Snapshot_format = Mdexp.Private.Snapshot_format
 
-let equal = String.equal
-let of_string s = s
-let to_string t = t
-let to_dyn t = Dyn.string (to_string t)
+let%expect_test "to_dyn" =
+  List.iter
+    [ Snapshot_format.Ocaml_block_string; Zig_multiline_string; Rust_string ]
+    ~f:(fun t -> print_dyn (Snapshot_format.to_dyn t));
+  [%expect
+    {|
+    Ocaml_block_string
+    Zig_multiline_string
+    Rust_string
+    |}]
+;;

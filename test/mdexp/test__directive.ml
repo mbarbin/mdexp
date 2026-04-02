@@ -43,5 +43,7 @@ let%expect_test "Directive.parse_line" =
   test "  @mdexp  ";
   [%expect {|Some { directive = Prose; trailing = None; loc = "_" }|}];
   test {|  @mdexp.code   { lang: "bash" }  |};
-  [%expect {|Some { directive = Code; trailing = Some "{ lang: \"bash\" }"; loc = "_" }|}]
+  [%expect {|Some { directive = Code; trailing = Some "{ lang: \"bash\" }"; loc = "_" }|}];
+  test "@mdexp.config";
+  [%expect {|Some { directive = Config; trailing = None; loc = "_" }|}]
 ;;

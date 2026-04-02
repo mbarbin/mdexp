@@ -63,3 +63,15 @@ let%expect_test "single-quoted strings" =
   feed acc {|{ 'key': 'val{ue}' }|};
   [%expect {|Done "{ 'key': 'val{ue}' }"|}]
 ;;
+
+let%expect_test "single-quoted escaped strings" =
+  let acc = Json5_accumulator.create () in
+  feed acc {|{ 'key': 'it\'s' }|};
+  [%expect {|Done "{ 'key': 'it\\'s' }"|}]
+;;
+
+let%expect_test "Need_more with no opening brace returns Need_more" =
+  let acc = Json5_accumulator.create () in
+  feed acc "   ";
+  [%expect {| Need_more |}]
+;;

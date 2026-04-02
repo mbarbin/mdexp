@@ -533,6 +533,17 @@ let%expect_test "snapshot with custom delimiter {id|...|id}" =
   [%expect {| Hello from custom delimiter |}]
 ;;
 
+let%expect_test "snapshot with digit-containing block string delimiter" =
+  let output =
+    extract
+      {xxx|(* @mdexp.snapshot *)
+[%expect {id42|Hello from id42|id42}]
+|xxx}
+  in
+  print_string output;
+  [%expect {| Hello from id42 |}]
+;;
+
 let%expect_test "snapshot preserves blank lines in multi-line block strings" =
   let output =
     extract
@@ -758,7 +769,12 @@ let%expect_test "config without snapshot key does not affect snapshots" =
 |xxx}
   in
   print_string output;
-  [%expect {| plain |}]
+  [%expect
+    {|
+    File "test.ml", line 1, characters 19-24:
+    Error: Unknown field [other] in configuration.
+    plain
+    |}]
 ;;
 
 (* -- Config: default code settings -- *)

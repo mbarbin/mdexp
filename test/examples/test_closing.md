@@ -15,5 +15,5 @@ This paragraph uses an explicit end directive.
 This demonstrates the common pattern: end prose with a directive.
 
 ```ocaml
-let (_ : unit -> unit) = fun () -> print_endline "Hello, World!"
+let (_ : string) = "Hello, World!"
 ```

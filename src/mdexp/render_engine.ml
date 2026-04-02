@@ -5,17 +5,12 @@
 (*********************************************************************************)
 
 let trim_blank_lines lines =
-  let rec drop_leading = function
+  let rec drop_while_blank = function
     | [] -> []
     | line :: rest ->
-      if String.is_empty (String.trim line) then drop_leading rest else line :: rest
+      if String.is_empty (String.trim line) then drop_while_blank rest else line :: rest
   in
-  let rec drop_trailing = function
-    | [] -> []
-    | [ line ] -> if String.is_empty (String.trim line) then [] else [ line ]
-    | line :: rest -> line :: drop_trailing rest
-  in
-  lines |> drop_leading |> List.rev |> drop_leading |> List.rev |> drop_trailing
+  lines |> drop_while_blank |> List.rev |> drop_while_blank |> List.rev
 ;;
 
 let dedent_lines lines =

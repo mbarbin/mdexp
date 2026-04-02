@@ -77,3 +77,14 @@ Extract a Rust snapshot (expect-test style).
   ```text
   Hello from Rust
   ```
+
+Error on file with no extension.
+
+  $ cat > noext << 'EOF'
+  > some content
+  > EOF
+
+  $ mdexp pp noext
+  Error: Unknown file extension "".
+  Hint: did you mean ml or rs?
+  [123]
