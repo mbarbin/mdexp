@@ -72,10 +72,6 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
   match action with
   | Emit_prose_line line -> t.prose_buffer <- line :: t.prose_buffer
   | Emit_code_line line -> t.code_buffer <- line :: t.code_buffer
-  | Open_code_fence { language } ->
-    Buffer.add_string t.output "```";
-    Buffer.add_string t.output (Markdown_lang_id.to_string language);
-    Buffer.add_char t.output '\n'
   | Close_code_fence -> Buffer.add_string t.output "```\n"
   | Flush_prose -> flush_prose t
   | Flush_code -> flush_code t
