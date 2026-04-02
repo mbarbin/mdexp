@@ -75,5 +75,5 @@ This outputs the prose followed by the code block, without needing
 separate comments:
 
 ```ocaml
-let (_ : unit -> unit) = fun () -> print_endline "Hello!"
+let (_ : string) = "Hello!"
 ```

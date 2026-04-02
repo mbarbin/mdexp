@@ -58,7 +58,14 @@ let answer = 42
 let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 
-let _ = question_of_life
+(* Here we are in a part of the code that is not exported to the resulting
+   markdown. This can include contents like in any other ml file, including
+   expect tests. *)
+
+let%expect_test "code can be executed" =
+  question_of_life ();
+  [%expect {| The answer is 42 |}]
+;;
 
 (* @mdexp
 
@@ -106,6 +113,6 @@ separate comments:
 
 @mdexp.code *)
 
-let (_ : unit -> unit) = fun () -> print_endline "Hello!"
+let (_ : string) = "Hello!"
 
 (* @mdexp.end *)
