@@ -68,8 +68,6 @@
    (>= 0.37.0))
   (print-table
    (>= 0.1.3))
-  (shexp
-   (>= v0.17))
   (windtrap
    (>= 0.1.0))
   (yojson

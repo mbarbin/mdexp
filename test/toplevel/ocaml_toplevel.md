@@ -10,8 +10,9 @@ output for documentation. This is useful for:
 
 ## Why a Custom Toplevel?
 
-mdexp supports running code blocks in a toplevel via ppx_expect that pipes code
-to a dune-built toplevel.
+mdexp supports running code blocks in a toplevel via ppx_expect. The toplevel
+process is started with an empty environment (`env:[]`) which suppresses
+initialization messages, and kept alive to allow sequential evaluations.
 
 Features:
 
@@ -30,20 +31,22 @@ The dune file defines a custom toplevel with preloaded libraries:
  (libraries mdexp_stdlib))
 ```
 
-The test library depends on the toplevel executable:
+The test library depends on the toplevel executable and uses unix:
 
 ```dune
 (library
  (name mdexp_toplevel_test)
  (inline_tests
   (deps mdexp_toplevel.exe))
+ (libraries mdexp_stdlib unix)
  ...)
 ```
 
 ## Implementation
 
-The wrapper creates a context with a temp directory, writes code to a file,
-pipes it to the toplevel, and captures the output.
+The wrapper starts a toplevel process with an empty environment, which
+suppresses all initialization messages. The process is kept alive across
+evaluations, allowing sequential code blocks to share definitions.
 
 ## Examples
 
@@ -101,6 +104,15 @@ List.map [1;2;3] ~f:(fun x -> x * 2);;
 ```terminal
 - : int list = [2; 4; 6]
 ```
+
+### Sequential Evaluations
+
+Definitions from earlier evaluations are available in later ones, since
+the toplevel process is kept alive:
+
+### Type Errors on Stdout
+
+Type errors are reported on stdout by the toplevel, not stderr:
 
 ## Integration with mdexp
 

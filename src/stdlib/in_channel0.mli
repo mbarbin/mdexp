@@ -7,5 +7,3 @@
 include module type of struct
   include In_channel
 end
-
-val read_all : string -> string

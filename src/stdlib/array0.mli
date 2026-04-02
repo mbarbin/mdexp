@@ -7,5 +7,3 @@
 include module type of struct
   include ArrayLabels
 end
-
-val iter : 'a t -> f:('a -> unit) -> unit

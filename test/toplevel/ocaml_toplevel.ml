@@ -18,8 +18,9 @@ output for documentation. This is useful for:
 
 ## Why a Custom Toplevel?
 
-mdexp supports running code blocks in a toplevel via ppx_expect that pipes code
-to a dune-built toplevel.
+mdexp supports running code blocks in a toplevel via ppx_expect. The toplevel
+process is started with an empty environment (`env:[]`) which suppresses
+initialization messages, and kept alive to allow sequential evaluations.
 
 Features:
 
@@ -40,7 +41,7 @@ The dune file defines a custom toplevel with preloaded libraries:
  (libraries mdexp_stdlib))
 *)
 
-(* @mdexp The test library depends on the toplevel executable: *)
+(* @mdexp The test library depends on the toplevel executable and uses unix: *)
 
 (* @mdexp.code { lang: "dune" } *)
 (*
@@ -48,6 +49,7 @@ The dune file defines a custom toplevel with preloaded libraries:
  (name mdexp_toplevel_test)
  (inline_tests
   (deps mdexp_toplevel.exe))
+ (libraries mdexp_stdlib unix)
  ...)
 *)
 
@@ -55,101 +57,81 @@ The dune file defines a custom toplevel with preloaded libraries:
 
 ## Implementation
 
-The wrapper creates a context with a temp directory, writes code to a file,
-pipes it to the toplevel, and captures the output. *)
+The wrapper starts a toplevel process with an empty environment, which
+suppresses all initialization messages. The process is kept alive across
+evaluations, allowing sequential code blocks to share definitions. *)
 
 module Unix = UnixLabels
 
 type t =
-  { context : Shexp_process.Context.t
-  ; temp_dir : string
+  { ic : in_channel
+  ; oc : out_channel
+  ; ec : in_channel
   }
-
-let create () =
-  let temp_dir = Filename.temp_dir "ocaml_toplevel" "" in
-  { context = Shexp_process.Context.create (); temp_dir }
-;;
-
-let rec remove_dir path =
-  if Sys.is_directory path
-  then (
-    let entries = Sys.readdir path in
-    Array.iter entries ~f:(fun name -> remove_dir (Filename.concat path name));
-    Unix.rmdir path)
-  else Unix.unlink path
-;;
-
-let dispose t =
-  Shexp_process.Context.dispose t.context;
-  if Sys.file_exists t.temp_dir then remove_dir t.temp_dir
-;;
-
-let run f =
-  let t = create () in
-  Exn.protect ~f:(fun () -> f t) ~finally:(fun () -> dispose t)
-;;
 
 (* The custom toplevel built by dune with project libraries preloaded.
    This is available because of the (deps mdexp_toplevel.exe) in dune. *)
 let toplevel_exe = "./mdexp_toplevel.exe"
+let sentinel = "__MDEXP_EVAL_SENTINEL_8f3a2b__"
 
-let is_toplevel_initialization_message line =
-  let stripped = String.trim line in
-  String.is_empty stripped
-  || String.equal stripped "#"
-  || List.exists
-       [ ": added to search path"; ".cma: loaded"; ".cmo: loaded"; ".cmxs: loaded" ]
-       ~f:(fun suffix -> String.ends_with stripped ~suffix)
-  || List.exists
-       [ "Findlib has been successfully loaded"
-       ; {|#require "package"|}
-       ; "#list;;"
-       ; "#camlp4o;;"
-       ; "#camlp4r;;"
-       ; "#predicates"
-       ; "Topfind.reset"
-       ; "#thread;;"
-       ]
-       ~f:(fun prefix -> String.starts_with stripped ~prefix)
+let create () =
+  let cmd = toplevel_exe ^ " -noprompt -no-version -color always" in
+  let ic, oc, ec = Unix.open_process_full cmd ~env:[||] in
+  { ic; oc; ec }
+;;
+
+let run f =
+  let t = create () in
+  let result = Exn.protect ~f:(fun () -> f t) ~finally:(fun () -> close_out t.oc) in
+  let stderr_content = In_channel.input_all t.ec in
+  let status = Unix.close_process_full (t.ic, t.oc, t.ec) in
+  let stderr_trimmed = String.trim stderr_content in
+  if not (String.is_empty stderr_trimmed)
+  then print_endline stderr_trimmed [@coverage off];
+  (match status with
+   | WEXITED 0 -> ()
+   | _ ->
+     (match[@coverage off] status with
+      | WEXITED n -> Printf.printf "[%d]\n" n
+      | WSIGNALED n -> Printf.printf "[signal %d]\n" n
+      | WSTOPPED n -> Printf.printf "[stopped %d]\n" n));
+  result
+;;
+
+let read_stdout_until_sentinel ic =
+  let buf = Buffer.create 256 in
+  (try
+     while true do
+       let line = input_line ic in
+       if String.equal (String.trim line) sentinel
+       then (
+         (* Consume the "- : unit = ()" response line *)
+         ignore (input_line ic : string);
+         raise_notrace Exit)
+       else (
+         if Buffer.length buf > 0 then Buffer.add_char buf '\n';
+         Buffer.add_string buf line)
+     done
+   with
+   | Exit -> ());
+  Buffer.contents buf
 ;;
 
 (* Run OCaml code and print both the code and the toplevel output *)
-let eval { context; temp_dir } ~code =
-  (* Print the code block first *)
+let eval t ~code =
   print_endline "```ocaml";
   print_endline code;
   print_endline "```";
   print_endline "";
   print_endline "```terminal";
-  let stdout_file = Filename.concat temp_dir "stdout.tmp" in
-  let stderr_file = Filename.concat temp_dir "stderr.tmp" in
-  Exn.protect
-    ~f:(fun () ->
-      let process =
-        Shexp_process.pipe
-          (Shexp_process.echo code)
-          (Shexp_process.call_exit_code
-             [ toplevel_exe; "-noprompt"; "-no-version"; "-color"; "always" ])
-        |> Shexp_process.stdout_to stdout_file
-        |> Shexp_process.stderr_to stderr_file
-      in
-      let exit_code = Shexp_process.eval ~context process in
-      let stdout_content = In_channel.read_all stdout_file in
-      let stderr_content = In_channel.read_all stderr_file in
-      (* Print the output, skipping leading initialization messages *)
-      let output = String.trim (stdout_content ^ stderr_content) in
-      let lines = String.split_lines output in
-      let rec skip_initialization_messages = function
-        | line :: rest when is_toplevel_initialization_message line ->
-          skip_initialization_messages rest
-        | lines -> lines
-      in
-      List.iter (skip_initialization_messages lines) ~f:print_endline;
-      if exit_code <> 0 then Printf.printf "[%d]\n" exit_code;
-      print_endline "```")
-    ~finally:(fun () ->
-      if Sys.file_exists stdout_file then Unix.unlink stdout_file;
-      if Sys.file_exists stderr_file then Unix.unlink stderr_file)
+  output_string t.oc code;
+  output_char t.oc '\n';
+  Printf.fprintf t.oc "print_endline %S;;\n" sentinel;
+  flush t.oc;
+  let stdout_content = read_stdout_until_sentinel t.ic in
+  let stdout_trimmed = String.trim stdout_content in
+  if not (String.is_empty stdout_trimmed) then print_endline stdout_trimmed;
+  print_endline "```"
 ;;
 
 (* @mdexp
@@ -253,6 +235,66 @@ List.map [1;2;3] ~f:(fun x -> x * 2);;|xxx};
 
     ```terminal
     - : int list = [2; 4; 6]
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+### Sequential Evaluations
+
+Definitions from earlier evaluations are available in later ones, since
+the toplevel process is kept alive: *)
+
+let%expect_test "sequential eval" =
+  run
+  @@ fun t ->
+  eval t ~code:"let x = 21;;";
+  [%expect
+    {|
+    ```ocaml
+    let x = 21;;
+    ```
+
+    ```terminal
+    val x : int = 21
+    ```
+    |}];
+  eval t ~code:"let y = x * 2;;";
+  [%expect
+    {|
+    ```ocaml
+    let y = x * 2;;
+    ```
+
+    ```terminal
+    val y : int = 42
+    ```
+    |}]
+;;
+
+(* @mdexp
+
+### Type Errors on Stdout
+
+Type errors are reported on stdout by the toplevel, not stderr: *)
+
+let%expect_test "type error on stdout" =
+  run
+  @@ fun t ->
+  eval t ~code:{xxx|let x = 1 + "hello";;|xxx};
+  [%expect
+    {|
+    ```ocaml
+    let x = 1 + "hello";;
+    ```
+
+    ```terminal
+    [1mLine 1, characters 12-19[0m:
+    1 | let x = 1 + "hello";;
+                    [1;31m^^^^^^^[0m
+    [1;31mError[0m: This constant has type [1mstring[0m but an expression was expected of type
+             [1mint[0m
     ```
     |}]
 ;;
