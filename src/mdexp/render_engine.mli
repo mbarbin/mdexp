@@ -5,7 +5,7 @@
 (*_********************************************************************************)
 
 val trim_blank_lines : string list -> string list
-val dedent_lines : first_line_is_inline:bool -> string list -> string list
+val dedent_lines : string list -> first_line_is_inline:bool -> string list
 
 val render_snapshot
   :  output:Buffer.t

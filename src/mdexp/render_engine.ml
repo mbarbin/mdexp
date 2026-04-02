@@ -13,7 +13,7 @@ let trim_blank_lines lines =
   lines |> drop_while_blank |> List.rev |> drop_while_blank |> List.rev
 ;;
 
-let dedent_lines ~first_line_is_inline lines =
+let dedent_lines lines ~first_line_is_inline =
   let count_leading_whitespace line =
     let len = String.length line in
     let i = ref 0 in
@@ -41,21 +41,25 @@ let dedent_lines ~first_line_is_inline lines =
         | None -> Some indent
         | Some current_min -> Some (Int.min current_min indent)))
   in
-  let dedent_line line =
+  let dedent_lines lines =
     match min_indent with
-    | None | Some 0 -> line
+    | None | Some 0 -> lines
     | Some indent_to_remove ->
-      if String.length line >= indent_to_remove
-      then
-        String.sub line ~pos:indent_to_remove ~len:(String.length line - indent_to_remove)
-      else line
+      List.map lines ~f:(fun line ->
+        if String.length line >= indent_to_remove
+        then
+          String.sub
+            line
+            ~pos:indent_to_remove
+            ~len:(String.length line - indent_to_remove)
+        else line)
   in
   if first_line_is_inline
   then (
     match lines with
-    | first :: rest -> String.ltrim first :: List.map rest ~f:dedent_line
+    | first :: rest -> String.ltrim first :: dedent_lines rest
     | [] -> [])
-  else List.map lines ~f:dedent_line
+  else dedent_lines lines
 ;;
 
 let count_leading_backticks line =
