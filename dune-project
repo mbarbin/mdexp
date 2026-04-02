@@ -40,9 +40,9 @@
   (pp
    (>= 2.0.0))
   (pplumbing-err
-   (>= 0.0.16))
+   (>= 0.0.17))
   (pplumbing-pp-tty
-   (>= 0.0.16))
+   (>= 0.0.17))
   (sexplib0
    (>= v0.17))
   (yojson
@@ -59,7 +59,7 @@
   (mdexp
    (= :version))
   (pplumbing-err
-   (>= 0.0.16))
+   (>= 0.0.17))
   (ppx_expect
    (>= v0.17))
   (ppx_windtrap

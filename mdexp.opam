@@ -18,8 +18,8 @@ depends: [
   "loc" {>= "0.3.3"}
   "ordering" {>= "3.20"}
   "pp" {>= "2.0.0"}
-  "pplumbing-err" {>= "0.0.16"}
-  "pplumbing-pp-tty" {>= "0.0.16"}
+  "pplumbing-err" {>= "0.0.17"}
+  "pplumbing-pp-tty" {>= "0.0.17"}
   "sexplib0" {>= "v0.17"}
   "yojson" {>= "3.0.0"}
   "yojson-five" {>= "3.0.0"}
