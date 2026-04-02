@@ -86,12 +86,15 @@ let run f =
   let stderr_content = In_channel.input_all t.ec in
   let status = Unix.close_process_full (t.ic, t.oc, t.ec) in
   let stderr_trimmed = String.trim stderr_content in
-  if not (String.is_empty stderr_trimmed) then print_endline stderr_trimmed;
+  if not (String.is_empty stderr_trimmed)
+  then print_endline stderr_trimmed [@coverage off];
   (match status with
    | WEXITED 0 -> ()
-   | WEXITED n -> Printf.printf "[%d]\n" n
-   | WSIGNALED n -> Printf.printf "[signal %d]\n" n
-   | WSTOPPED n -> Printf.printf "[stopped %d]\n" n);
+   | _ ->
+     (match[@coverage off] status with
+      | WEXITED n -> Printf.printf "[%d]\n" n
+      | WSIGNALED n -> Printf.printf "[signal %d]\n" n
+      | WSTOPPED n -> Printf.printf "[stopped %d]\n" n));
   result
 ;;
 
