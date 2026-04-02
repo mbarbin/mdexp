@@ -758,7 +758,12 @@ let%expect_test "config without snapshot key does not affect snapshots" =
 |xxx}
   in
   print_string output;
-  [%expect {| plain |}]
+  [%expect
+    {|
+    File "test.ml", line 1, characters 19-24:
+    Error: Unknown field [other] in configuration.
+    plain
+    |}]
 ;;
 
 (* -- Config: default code settings -- *)

@@ -84,7 +84,7 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
     let code_config =
       match lj_opt with
       | None -> t.code_defaults
-      | Some lj -> Code_config.of_located_json ~defaults:t.code_defaults lj
+      | Some lj -> Code_config.of_located_json ~inherited:t.code_defaults lj
     in
     let language =
       match code_config.lang with
@@ -98,7 +98,7 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
     let snapshot_config =
       match lj_opt with
       | None -> t.snapshot_defaults
-      | Some lj -> Snapshot_config.of_located_json ~defaults:t.snapshot_defaults lj
+      | Some lj -> Snapshot_config.of_located_json ~inherited:t.snapshot_defaults lj
     in
     t.processing_state
     <- Snapshot
@@ -106,24 +106,13 @@ let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
          ; state = Snapshot_processor.create ~snapshot_formats:t.snapshot_formats
          }
   | Configure lj ->
-    let json = Located_json.json lj in
-    (match json with
-     | `Assoc fields ->
-       (match List.assoc_opt "snapshot" fields with
-        | Some (`Assoc _ as snapshot_json) ->
-          t.snapshot_defaults
-          <- Snapshot_config.of_located_json
-               ~defaults:t.snapshot_defaults
-               (Located_json.with_json lj snapshot_json)
-        | Some _ | None -> ());
-       (match List.assoc_opt "code" fields with
-        | Some (`Assoc _ as code_json) ->
-          t.code_defaults
-          <- Code_config.of_located_json
-               ~defaults:t.code_defaults
-               (Located_json.with_json lj code_json)
-        | Some _ | None -> ())
-     | _ -> ())
+    let config =
+      Config.of_located_json
+        ~inherited:{ snapshot = t.snapshot_defaults; code = t.code_defaults }
+        lj
+    in
+    t.snapshot_defaults <- config.snapshot;
+    t.code_defaults <- config.code
 ;;
 
 let process_line t ~line =

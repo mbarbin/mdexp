@@ -13,6 +13,7 @@ module Private : sig
   module Code_config = Code_config
   module Comment_syntax = Comment_syntax
   module Directive = Directive
+  module Json_object = Json_object
   module Json5_accumulator = Json5_accumulator
   module Line_processor = Line_processor
   module Located_json = Located_json
@@ -21,6 +22,7 @@ module Private : sig
   module Snapshot_format = Snapshot_format
 
   module Std : sig
+    module Json_object = Json_object
     module Markdown_lang_id = Markdown_lang_id
     module Host_language = Host_language
   end

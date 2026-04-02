@@ -18,7 +18,7 @@ module Action = struct
     | Configure of Located_json.t
 
   let json_to_dyn json = Dyn.string (Yojson.Basic.to_string json)
-  let located_json_to_dyn lj = json_to_dyn (Located_json.json lj)
+  let located_json_to_dyn lj = json_to_dyn (Located_json.json lj :> Yojson.Basic.t)
 
   let to_dyn = function
     | Emit_prose_line s -> Dyn.variant "Emit_prose_line" [ Dyn.string s ]
@@ -254,7 +254,8 @@ end
 let try_parse_located_json5 ~file_cache ~accumulator text =
   match Yojson_five.Basic.from_string text |> Result.to_option with
   | None -> None
-  | Some json -> Some (Located_json.create ~file_cache ~accumulator ~json)
+  | Some (`Assoc _ as json) -> Some (Located_json.create ~file_cache ~accumulator ~json)
+  | Some _ -> None
 ;;
 
 let emit_inline_config_action origin located_json =

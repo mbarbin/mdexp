@@ -7,19 +7,23 @@
 (** Controls how a code block is rendered into the output Markdown.
 
     When a [@mdexp.code] directive carries an inline JSON5 object (e.g.
-    [{ lang: "bash" }]), or when defaults have been set via [@mdexp.config],
-    those values are decoded into a {!t} that drives the renderer: which
-    language tag the code fence carries. *)
+    [{ lang: "bash" }]), or when inherited config has been set via
+    [@mdexp.config], those values are decoded into a {!t} that drives the
+    renderer: which language tag the code fence carries.
+
+    The [~inherited] parameter carries the previously accumulated configuration
+    so that fields not mentioned in the current directive retain their earlier
+    values. *)
 
 type t = { lang : Markdown_lang_id.t option }
 
+val equal : t -> t -> bool
 val to_dyn : t -> Dyn.t
 val default : t
-val of_json : ?defaults:t -> Yojson.Basic.t -> t
 
-(** Like {!of_json} but takes a {!Located_json.t} and reports located errors
-    for unknown fields and wrong value types via [Err.error]. *)
-val of_located_json : ?defaults:t -> Located_json.t -> t
+(** Decode a {!Located_json.t} into a {!t}, reporting located errors for
+    unknown fields and wrong value types via [Err.error]. *)
+val of_located_json : inherited:t -> Located_json.t -> t
 
 (** The set of recognized field names in a code configuration object. *)
 val known_fields : string list

@@ -9,7 +9,7 @@
    node position by (Yojson.Basic.t, Loc.t) — including nested ones. *)
 
 type t =
-  { json : Yojson.Basic.t
+  { json : Json_object.t
   ; key_positions : (string * Loc.t) list
   ; node_positions : (Yojson.Basic.t * Loc.t) list
   }
@@ -225,13 +225,11 @@ let rec index_assoc ~accumulator ~file_cache ~key_acc ~node_acc ~text ~text_star
         i := val_stop)))
 ;;
 
-let create ~file_cache ~accumulator ~json =
+let create ~file_cache ~accumulator ~(json : Json_object.t) =
   let text = Json5_accumulator.buffer_contents accumulator in
   let key_acc = ref [] in
   let node_acc = ref [] in
-  (match json with
-   | `Assoc fields ->
-     index_assoc ~accumulator ~file_cache ~key_acc ~node_acc ~text ~text_start:0 fields
-   | _ -> ());
+  let fields = Json_object.fields json in
+  index_assoc ~accumulator ~file_cache ~key_acc ~node_acc ~text ~text_start:0 fields;
   { json; key_positions = List.rev !key_acc; node_positions = List.rev !node_acc }
 ;;
