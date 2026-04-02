@@ -5,8 +5,3 @@
 (***************************************************************************************)
 
 include Stdlib.In_channel
-
-let read_all path =
-  let ic = open_in path in
-  Fun.protect ~finally:(fun () -> close_in ic) (fun () -> In_channel.input_all ic)
-;;
