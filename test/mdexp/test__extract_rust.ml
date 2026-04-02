@@ -282,6 +282,18 @@ let%expect_test "no directives" =
   [%expect {||}]
 ;;
 
+let%expect_test "snapshot skips lines with no string literal" =
+  let output =
+    extract
+      {xxx|// @mdexp.snapshot
+let x = 42;
+expect![["found it"]];
+|xxx}
+  in
+  print_string output;
+  [%expect {| found it |}]
+;;
+
 let%expect_test "snapshot with block mode and code context" =
   let output =
     extract
