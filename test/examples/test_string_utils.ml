@@ -131,6 +131,21 @@ let%expect_test "split_on_char - space separated" =
 
 (* @mdexp
 
+Consecutive separators produce empty segments that are skipped:
+
+@mdexp.code *)
+let%expect_test "split_on_char - consecutive separators" =
+  let words = split_on_char ',' "a,,b" in
+  List.iter words ~f:print_endline;
+  [%expect
+    {|
+    a
+    b
+    |}]
+;;
+
+(* @mdexp
+
    ## Literate Example: Complex String Processing
 
    This example demonstrates a more complex use case where we combine both

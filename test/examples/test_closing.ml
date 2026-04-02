@@ -30,7 +30,7 @@ let (_ : int) = 2
 This demonstrates the common pattern: end prose with a directive.
 @mdexp.code *)
 
-let (_ : unit -> unit) = fun () -> print_endline "Hello, World!"
+let (_ : string) = "Hello, World!"
 
 (* @mdexp.end *)
 
