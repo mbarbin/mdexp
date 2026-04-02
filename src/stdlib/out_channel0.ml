@@ -5,10 +5,3 @@
 (***************************************************************************************)
 
 include Out_channel
-
-let output_string = Out_channel.output_string
-
-let write_all path ~data =
-  let oc = open_out path in
-  Fun.protect ~finally:(fun () -> close_out oc) (fun () -> output_string oc data)
-;;

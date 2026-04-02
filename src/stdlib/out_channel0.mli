@@ -7,6 +7,3 @@
 include module type of struct
   include Out_channel
 end
-
-val output_string : t -> string -> unit
-val write_all : string -> data:string -> unit

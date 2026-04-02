@@ -23,7 +23,8 @@ let key_loc t name =
 ;;
 
 let value_loc t node =
-  List.find_map t.node_positions ~f:(fun (n, loc) -> if n == node then Some loc else None)
+  List.find_map t.node_positions ~f:(fun (n, loc) ->
+    if phys_equal n node then Some loc else None)
 ;;
 
 (* -- JSON5 text scanner -- *)

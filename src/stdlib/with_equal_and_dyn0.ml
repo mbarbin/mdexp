@@ -4,9 +4,9 @@
 (*  SPDX-License-Identifier: MIT OR LGPL-3.0-or-later WITH LGPL-3.0-linking-exception  *)
 (***************************************************************************************)
 
-include ListLabels
+module type S = sig
+  type t
 
-let exists l ~f = exists l ~f
-let iter l ~f = iter l ~f
-let map l ~f = map l ~f
-let fold_left l ~init ~f = fold_left l ~init ~f
+  val equal : t -> t -> bool
+  val to_dyn : t -> Dyn.t
+end

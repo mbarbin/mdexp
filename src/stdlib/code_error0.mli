@@ -5,10 +5,5 @@
 (*_**************************************************************************************)
 
 include module type of struct
-  include ListLabels
+  include Pplumbing_err.Code_error
 end
-
-val exists : 'a list -> f:('a -> bool) -> bool
-val iter : 'a list -> f:('a -> unit) -> unit
-val map : 'a list -> f:('a -> 'b) -> 'b list
-val fold_left : 'a list -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc
