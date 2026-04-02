@@ -23,6 +23,7 @@ type t =
   ; mutable processing_state : Processing_state.t
   ; output : Buffer.t
   ; mutable prose_buffer : string list
+  ; mutable prose_first_line_is_inline : bool
   ; mutable code_buffer : string list
   }
 
@@ -42,6 +43,7 @@ let create ~file_cache ~host_language =
   ; processing_state = Lines
   ; output
   ; prose_buffer = []
+  ; prose_first_line_is_inline = false
   ; code_buffer = []
   }
 ;;
@@ -50,17 +52,20 @@ let flush_prose (t : t) =
   let lines =
     List.rev t.prose_buffer
     |> Render_engine.trim_blank_lines
-    |> Render_engine.dedent_lines
+    |> Render_engine.dedent_lines ~first_line_is_inline:t.prose_first_line_is_inline
   in
   List.iter lines ~f:(fun line ->
     Buffer.add_string t.output line;
     Buffer.add_char t.output '\n');
-  t.prose_buffer <- []
+  t.prose_buffer <- [];
+  t.prose_first_line_is_inline <- false
 ;;
 
 let flush_code (t : t) =
   let lines =
-    List.rev t.code_buffer |> Render_engine.trim_blank_lines |> Render_engine.dedent_lines
+    List.rev t.code_buffer
+    |> Render_engine.trim_blank_lines
+    |> Render_engine.dedent_lines ~first_line_is_inline:false
   in
   List.iter lines ~f:(fun line ->
     Buffer.add_string t.output line;
@@ -71,6 +76,9 @@ let flush_code (t : t) =
 let feed_line_action (t : t) ~(action : Line_processor.Action.t) =
   match action with
   | Emit_prose_line line -> t.prose_buffer <- line :: t.prose_buffer
+  | Emit_prose_line_inline line ->
+    t.prose_buffer <- line :: t.prose_buffer;
+    t.prose_first_line_is_inline <- true
   | Emit_code_line line -> t.code_buffer <- line :: t.code_buffer
   | Close_code_fence -> Buffer.add_string t.output "```\n"
   | Flush_prose -> flush_prose t

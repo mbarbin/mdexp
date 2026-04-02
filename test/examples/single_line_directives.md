@@ -11,5 +11,5 @@ and continues on subsequent lines.
 
 ### Multi-Line with Initial Content
 
-   This continues on the next line because the block comment
-   didn't close on the first line.
+This continues on the next line because the block comment
+didn't close on the first line.
