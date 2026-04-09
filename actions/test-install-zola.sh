@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Mathieu Barbin <mathieu.barbin@gmail.com>
+# SPDX-License-Identifier: MIT
 # Test the zola install script locally.
 # Usage: ./test-install-zola.sh <version> <digest>
 set -eu

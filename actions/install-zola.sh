@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2026 Mathieu Barbin <mathieu.barbin@gmail.com>
+# SPDX-License-Identifier: MIT
 # Install zola binary from GitHub releases.
 #
 # Environment variables:
