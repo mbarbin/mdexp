@@ -1,0 +1,58 @@
+name: test-deploy-doc
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test-deploy:
+    name: Test deployment
+    runs-on: ubuntu-latest
+
+    env:
+      MDBOOK_VERSION: "0.5.2"
+      MDBOOK_DIGEST: "sha256:b7ab218618bb3c1715e3e1759cfa0abc56dcd7ab5d90f60dcd86d708c87b715d"
+      ZOLA_VERSION: "0.22.1"
+      ZOLA_DIGEST: "sha256:45de6b2559aba4df42199dc6b0161acb914d37be4ccaa03297cd4a26c8e14042"
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Cache mdbook binary
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        id: mdbook-cache
+        with:
+          path: ~/.local/bin/mdbook
+          key: mdbook-${{ env.MDBOOK_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.MDBOOK_DIGEST }}
+
+      - name: Install mdbook
+        env:
+          BINARY_CACHE_HIT: ${{ steps.mdbook-cache.outputs.cache-hit }}
+        run: |
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          bash actions/install-mdbook.sh
+
+      - name: Cache zola binary
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        id: zola-cache
+        with:
+          path: ~/.local/bin/zola
+          key: zola-${{ env.ZOLA_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.ZOLA_DIGEST }}
+
+      - name: Install zola
+        env:
+          BINARY_CACHE_HIT: ${{ steps.zola-cache.outputs.cache-hit }}
+        run: |
+          bash actions/install-zola.sh
+
+      - name: Build documentation
+        run: make -C doc build

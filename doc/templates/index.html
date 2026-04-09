@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.title }}{% endblock title %}
+
+{% block content %}
+<section class="hero">
+  <h1>{{ section.title }}</h1>
+  {{ section.content | safe }}
+
+  <div class="sections-grid">
+    <a href="{{ get_url(path="@/tutorials/_index.md") }}" class="section-card">
+      <h3>Tutorials</h3>
+      <p>Learning-oriented guides to get you started.</p>
+    </a>
+    <a href="{{ get_url(path="@/guides/_index.md") }}" class="section-card">
+      <h3>Guides</h3>
+      <p>Problem-oriented directions for specific tasks.</p>
+    </a>
+    <a href="{{ get_url(path="@/reference/_index.md") }}" class="section-card">
+      <h3>Reference</h3>
+      <p>Information-oriented technical descriptions.</p>
+    </a>
+    <a href="{{ get_url(path="@/explanation/_index.md") }}" class="section-card">
+      <h3>Explanation</h3>
+      <p>Understanding-oriented background and context.</p>
+    </a>
+  </div>
+</section>
+
+{% set blog_section = get_section(path="blog/_index.md") %}
+{% if blog_section.pages | length > 0 %}
+<section>
+  <h2>Latest Posts</h2>
+  <ul>
+    {% for page in blog_section.pages | slice(end=5) %}
+    <li>
+      {% if page.date %}
+      <time datetime="{{ page.date | date(format="%Y-%m-%d") }}">{{ page.date | date(format="%Y-%m-%d") }}</time> —
+      {% endif %}
+      <a href="{{ page.permalink }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock content %}
