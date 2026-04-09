@@ -9,3 +9,9 @@ include ListLabels
 let iter l ~f = iter l ~f
 let map l ~f = map l ~f
 let fold_left l ~init ~f = fold_left l ~init ~f
+
+let rec last_exn = function
+  | [] -> invalid_arg "List.last_exn: empty list"
+  | [ x ] -> x
+  | _ :: tl -> last_exn tl
+;;
