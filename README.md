@@ -16,6 +16,10 @@ limitations and issues at the moment. Come back in a little while!
 
 mdexp is rooted in the tradition of [literate programming](https://en.wikipedia.org/wiki/Literate_programming), where documentation and executable code coexist in a single source.
 
+### Documentation framework
+
+The documentation for this project is organized following the **[Diátaxis](https://diataxis.fr/)** framework by Daniele Procida.
+
 ### Expect-test frameworks
 
 The expect-test paradigm — where expected output is captured inline and updated via snapshot — is central to mdexp's design. We are grateful to the following projects:
