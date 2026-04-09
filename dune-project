@@ -94,6 +94,8 @@
    (>= 0.1.0))
   (ppxlib
    (>= 0.37.0))
+  (print-table
+   (>= 0.1.3))
   (windtrap
    (>= 0.1.0))
   (odoc
