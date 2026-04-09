@@ -25,7 +25,7 @@ let greet name = Printf.printf "Hello, %s!\n" name
 
 (* @mdexp
 
-   Let's add *mdexp* directives to a windtrap test: *)
+Let's add *mdexp* directives to a windtrap test: *)
 
 let (_ : string) =
   (* @mdexp.snapshot { lang: "diff" } *)
@@ -48,7 +48,7 @@ let (_ : string) =
 
 (* @mdexp
 
-   This would yield the following markdown: *)
+This would yield the following markdown: *)
 
 let () =
   let tests =

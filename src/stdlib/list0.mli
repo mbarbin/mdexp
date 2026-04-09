@@ -11,3 +11,4 @@ end
 val iter : 'a list -> f:('a -> unit) -> unit
 val map : 'a list -> f:('a -> 'b) -> 'b list
 val fold_left : 'a list -> init:'acc -> f:('acc -> 'a -> 'acc) -> 'acc
+val last_exn : 'a list -> 'a
