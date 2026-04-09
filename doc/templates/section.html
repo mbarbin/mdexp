@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section.title }} - {{ config.title }}{% endblock title %}
+
+{% block sidebar %}
+<aside class="sidebar">
+  {% set root = get_section(path="_index.md") %}
+  {% for subsection_path in root.subsections %}
+    {% set sub = get_section(path=subsection_path) %}
+    {% if sub.title != "Blog" and sub.title != "Books" %}
+    <div class="sidebar-section">
+      <h4><a href="{{ sub.permalink }}">{{ sub.title }}</a></h4>
+      <ul>
+        {% for subsub_path in sub.subsections %}
+          {% set subsub = get_section(path=subsub_path) %}
+          <li><a href="{{ subsub.permalink }}" {% if section.permalink == subsub.permalink %}class="active"{% endif %}>{{ subsub.title }}</a></li>
+        {% endfor %}
+        {% for pg in sub.pages %}
+          <li><a href="{{ pg.permalink }}" {% if page and page.permalink == pg.permalink %}class="active"{% endif %}>{{ pg.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  {% endfor %}
+</aside>
+{% endblock sidebar %}
+
+{% block content %}
+<article>
+  <h1>{{ section.title }}</h1>
+  {{ section.content | safe }}
+
+  {% if paginator %}
+  {# Paginated section (blog) #}
+  <ul>
+    {% for pg in paginator.pages %}
+    <li>
+      {% if pg.date %}
+      <time datetime="{{ pg.date | date(format="%Y-%m-%d") }}">{{ pg.date | date(format="%Y-%m-%d") }}</time> —
+      {% endif %}
+      <a href="{{ pg.permalink }}">{{ pg.title }}</a>
+      {% if pg.taxonomies.tags %}
+        {% for tag in pg.taxonomies.tags %}
+        <a href="{{ get_taxonomy_url(kind="tags", name=tag) }}" class="tags">#{{ tag }}</a>
+        {% endfor %}
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if paginator.number_pagers > 1 %}
+  <nav class="pagination">
+    {% if paginator.previous %}
+    <a href="{{ paginator.previous }}">&lt; Prev</a>
+    {% endif %}
+    <span>Page {{ paginator.current_index }} of {{ paginator.number_pagers }}</span>
+    {% if paginator.next %}
+    <a href="{{ paginator.next }}">Next &gt;</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  {% elif section.subsections | length > 0 or section.pages | length > 0 %}
+  {# Documentation section #}
+  <h2>In this section</h2>
+  <ul>
+    {% for subsection_path in section.subsections %}
+      {% set sub = get_section(path=subsection_path) %}
+      <li><a href="{{ sub.permalink }}">{{ sub.title }}</a></li>
+    {% endfor %}
+    {% for pg in section.pages %}
+      <li><a href="{{ pg.permalink }}">{{ pg.title }}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</article>
+{% endblock content %}
+
+{% block toc %}
+{% if section.toc | length > 0 %}
+<aside class="toc">
+  <h4>On this page</h4>
+  <ul>
+    {% for h in section.toc %}
+    <li><a href="{{ h.permalink }}">{{ h.title }}</a>
+      {% if h.children | length > 0 %}
+      <ul>
+        {% for child in h.children %}
+        <li><a href="{{ child.permalink }}">{{ child.title }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</aside>
+{% endif %}
+{% endblock toc %}

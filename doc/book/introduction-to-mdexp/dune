@@ -1,4 +1,4 @@
-(data_only_dirs book)
+(data_only_dirs shared-theme)
 
 (library
  (name mdexp_introduction)

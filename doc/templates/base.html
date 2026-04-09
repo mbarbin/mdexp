@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+    {% if page %}
+    {% if page.description %}
+    <meta name="description" content="{{ page.description }}">
+    {% endif %}
+    {% elif section %}
+    {% if section.description %}
+    <meta name="description" content="{{ section.description }}">
+    {% endif %}
+    {% endif %}
+    {% if page %}<link rel="canonical" href="{{ page.permalink }}" />
+    {% elif section %}<link rel="canonical" href="{{ section.permalink }}" />
+    {% else %}<link rel="canonical" href="{{ config.base_url }}" />
+    {% endif %}
+    <link rel="stylesheet" href="{{ get_url(path="style.css") }}">
+  </head>
+  <body class="theme-{{ config.extra.zolanight.theme | default(value="tokyonight") }}">
+    <header>
+      <nav class="top-nav">
+        <a href="{{ config.base_url }}" class="site-title">mdexp</a>
+        <div class="nav-links-left">
+          <a href="{{ get_url(path="@/tutorials/_index.md") }}">Tutorials</a>
+          <a href="{{ get_url(path="@/guides/_index.md") }}">Guides</a>
+          <a href="{{ get_url(path="@/reference/_index.md") }}">Reference</a>
+          <a href="{{ get_url(path="@/explanation/_index.md") }}">Explanation</a>
+        </div>
+        <div class="nav-links-right">
+          <a href="{{ get_url(path="@/blog/_index.md") }}">Blog</a>
+          <a href="{{ get_url(path="@/books/_index.md") }}">Books</a>
+          <a href="{{ config.extra.github_url }}">GitHub</a>
+        </div>
+      </nav>
+    </header>
+    <hr>
+    <div class="page-wrapper">
+      {% block sidebar %}{% endblock sidebar %}
+      <main>
+        {% block content %}{% endblock content %}
+      </main>
+      {% block toc %}{% endblock toc %}
+    </div>
+    <hr>
+    <footer>
+      <p>&copy; {{ now() | date(format="%Y") }} Mathieu Barbin. Powered by <a href="https://www.getzola.org/">Zola</a> and <a href="https://github.com/mxaddict/zolanight">ZolaNight</a>.</p>
+    </footer>
+  </body>
+</html>

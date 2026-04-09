@@ -1,0 +1,362 @@
+// Import zolanight base styles
+@import 'reset';
+@import 'colors';
+
+// Generate CSS variables from zolanight palettes
+@mixin theme-vars($palette) {
+  --bg-color: #{map-get($palette, bg)};
+  --fg-color: #{map-get($palette, fg)};
+  --comment-color: #{map-get($palette, comment)};
+  --blue-color: #{map-get($palette, blue)};
+  --cyan-color: #{map-get($palette, cyan)};
+  --green-color: #{map-get($palette, green)};
+  --orange-color: #{map-get($palette, orange)};
+  --red-color: #{map-get($palette, red)};
+  --yellow-color: #{map-get($palette, yellow)};
+  --magenta-color: #{map-get($palette, magenta)};
+}
+
+@each $name, $palette in $palettes {
+  .theme-#{$name} {
+    @include theme-vars($palette);
+  }
+}
+
+// Base styles (from zolanight, adapted for docs layout)
+body {
+  font-family:
+    'Hack', 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+}
+
+a {
+  color: var(--orange-color);
+  text-decoration: underline;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--blue-color);
+  line-height: 1.25;
+  margin-bottom: 1rem;
+}
+
+h1:before { content: '# '; color: var(--cyan-color); }
+h2:before { content: '## '; color: var(--cyan-color); }
+h3:before { content: '### '; color: var(--cyan-color); }
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1rem; }
+
+code {
+  padding: 0px 10px;
+  border-radius: 5px;
+  background-color: var(--fg-color);
+  color: var(--bg-color);
+}
+
+pre {
+  padding: 1em;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--cyan-color);
+  overflow: auto;
+}
+
+pre > code {
+  background-color: transparent;
+  color: var(--fg-color);
+  padding: 0;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--cyan-color);
+  margin: 1em 0;
+}
+
+blockquote {
+  border-left: 4px solid var(--blue-color);
+  padding: 1em;
+  margin: 1em 0;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+img {
+  border: 1px solid var(--magenta-color);
+  border-radius: 5px;
+  max-width: 100%;
+  height: auto;
+}
+
+// Top navigation
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+
+  .site-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--blue-color);
+  }
+
+  .nav-links-left, .nav-links-right {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+
+    a {
+      color: var(--orange-color);
+    }
+  }
+
+  .nav-links-left {
+    margin-right: auto;
+    margin-left: 2rem;
+  }
+}
+
+// Three-column page wrapper
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  gap: 2rem;
+
+  main {
+    flex: 1;
+    min-width: 0;
+    max-width: 720px;
+  }
+}
+
+// Left sidebar
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+
+  .sidebar-section {
+    margin-bottom: 1.2rem;
+
+    h4 {
+      margin: 0 0 0.3rem 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--comment-color);
+
+      a {
+        color: var(--comment-color);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--blue-color);
+        }
+      }
+    }
+
+    // No # prefix on sidebar headings
+    h4:before { content: none; }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 0.15rem 0;
+
+        a {
+          display: block;
+          padding: 0.15rem 0.5rem;
+          border-radius: 3px;
+          color: var(--fg-color);
+          text-decoration: none;
+
+          &:hover {
+            color: var(--orange-color);
+            background-color: rgba(255, 255, 255, 0.05);
+          }
+
+          &.active {
+            color: var(--orange-color);
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Right sidebar: table of contents
+.toc {
+  width: 200px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--comment-color);
+  }
+
+  h4:before { content: none; }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 0.15rem 0;
+
+      a {
+        color: var(--comment-color);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--orange-color);
+        }
+      }
+    }
+
+    ul {
+      padding-left: 0.75rem;
+    }
+  }
+}
+
+// Landing page
+.hero {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+  text-align: left;
+
+  .section-card {
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--cyan-color);
+    border-radius: 6px;
+    display: block;
+    text-decoration: none;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      text-decoration: none;
+    }
+
+    h3 {
+      margin: 0 0 0.3rem 0;
+      color: var(--blue-color);
+    }
+
+    h3:before { content: none; }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--comment-color);
+    }
+  }
+}
+
+// Article content
+article {
+  h1:first-child {
+    margin-top: 0;
+  }
+
+  ul {
+    padding-left: 1.5rem;
+  }
+}
+
+.meta {
+  font-size: 0.9rem;
+  color: var(--comment-color);
+}
+
+.tags a {
+  color: var(--green-color);
+}
+
+ul.blog {
+  list-style: none;
+  padding-left: 0;
+}
+
+footer {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  font-size: 0.85rem;
+  color: var(--comment-color);
+
+  a {
+    color: var(--orange-color);
+  }
+}
+
+// Responsive
+@media (max-width: 900px) {
+  .page-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar, .toc {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+
+  .top-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .nav-links-left, .nav-links-right {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-links-left {
+      margin-right: 0;
+      margin-left: 0;
+    }
+  }
+
+  .sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
