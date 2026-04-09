@@ -15,7 +15,7 @@
   +a
   -open
   Mdexp_stdlib)
- (libraries mdexp_stdlib windtrap)
+ (libraries mdexp_stdlib print-table windtrap)
  (instrumentation
   (backend bisect_ppx))
  (preprocess
@@ -125,3 +125,35 @@
  (package mdexp-dev)
  (action
   (diff windtrap_snapshots.md windtrap_snapshots.output)))
+
+; -- edsl --
+
+(rule
+ (target edsl.output)
+ (deps edsl.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff edsl.md edsl.output)))
+
+; -- broadening_the_view --
+
+(rule
+ (target broadening_the_view.output)
+ (deps broadening_the_view.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (alias runtest)
+ (package mdexp-dev)
+ (action
+  (diff broadening_the_view.md broadening_the_view.output)))

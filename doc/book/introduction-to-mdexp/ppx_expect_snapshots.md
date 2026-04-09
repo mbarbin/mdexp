@@ -4,55 +4,86 @@
 inline expect-test framework for OCaml. Tests are written as
 `let%expect_test` with `[%expect {|...|}]` assertions.
 
-Place `@mdexp.snapshot` before the `[%expect]` block. mdexp outputs
-the code up to that point, then extracts the block string content.
+## How it works
 
-## Inline Snapshot
+Place `@mdexp.snapshot` before the `[%expect]` block. mdexp
+extracts the block string content and emits it in the document.
+Here is what an annotated test looks like (the `+` lines highlight
+the mdexp directives):
 
-Here, the code block ends at `@mdexp.snapshot` and the `[%expect]`
-content follows as plain text:
-
-```ocaml
-let%expect_test "greeting" =
-  print_endline "Hello, World!";
+```diff
+  let%expect_test "greeting" =
+    print_endline "Hello, World!";
++   (* @mdexp.snapshot *)
+    [%expect {| Hello, World! |}]
+  ;;
 ```
+
+The `let%expect_test` wrapper and `[%expect]` assertion are not
+included in the output --- only the block string content appears.
+In this case, the rendered document shows:
 
 Hello, World!
 
-## Multi-Line Snapshot
+## Multi-line output
 
-Multi-line output works the same way. The content is dedented
-automatically:
+Multi-line output works the same way. The block string content is
+dedented automatically:
 
-```ocaml
-let%expect_test "list" =
-  List.iter ~f:print_endline [ "First"; "Second"; "Third" ];
+```diff
+  let%expect_test "list" =
+    List.iter ~f:print_endline [ "First"; "Second"; "Third" ];
++   (* @mdexp.snapshot { lang: "txt" } *)
+    [%expect
+      {|
+      First
+      Second
+      Third |}]
+  ;;
 ```
 
+This produces:
+
+```txt
 First
 Second
 Third
-
-## Snapshot in a Code Fence
-
-Use `{ lang: "json" }` to wrap the snapshot content in a fenced
-code block. Setting a language implies block mode:
-
-```ocaml
-let%expect_test "json output" =
-  print_endline {|{ "name": "mdexp", "version": "1.0" }|};
 ```
+
+## Snapshot configuration
+
+By default, the snapshot content is emitted as plain text. As we've seen
+above, an inline annotation can change this. Here is another example:
+
+`{ lang: "json" }` wraps the content in a fenced code block with
+the given language tag:
+
+```diff
+  let%expect_test "json output" =
+    print_endline {|{ "name": "mdexp", "version": "1.0" }|};
++   (* @mdexp.snapshot { lang: "json" } *)
+    [%expect {|{ "name": "mdexp", "version": "1.0" }|}]
+  ;;
+```
+
+This produces:
 
 ```json
 { "name": "mdexp", "version": "1.0" }
 ```
 
-Use `{ block }` for a plain fence without a language tag:
+`{ block: true }` wraps the content in a plain fence without a
+language tag:
 
-```ocaml
-let%expect_test "block mode" =
-  print_endline "some output";
+```diff
+  let%expect_test "block mode" =
+    print_endline "some output";
++   (* @mdexp.snapshot { block: true } *)
+    [%expect {|some output|}]
+  ;;
 ```
+
+This produces:
 
 ```
 some output

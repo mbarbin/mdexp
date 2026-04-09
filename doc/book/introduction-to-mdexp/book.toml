@@ -13,6 +13,7 @@ default-theme = "light"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/mbarbin/mdexp"
 theme = "../shared-theme"
+mathjax-support = true
 additional-js = ["../shared-theme/ansi-plugin.js"]
 
 [output.html.fold]

@@ -1,25 +1,31 @@
 # Introduction
 
-This book is a short, cover-to-cover introduction to **mdexp** ---
-a documentation preprocessor for literate programming with embedded
-snapshots. It is aimed at newcomers who want to understand what the
-tool does and why it is useful. For installation, detailed reference,
-and how-to guides, see the main documentation.
+This book introduces **mdexp** --- a documentation preprocessor for
+literate programming with embedded snapshots. It is aimed at newcomers
+who want to understand what the tool does, why it is useful, and what
+kind of workflows it enables.
+
+> This book is meant to be a short introductory read --- not the
+> full documentation. The content is intentionally concise: our goal
+> is to give a clear picture of the approach and what it makes
+> possible. For installation, detailed reference, and how-to guides,
+> see the main documentation site.
 
 ## What is mdexp?
 
-Imagine writing a source file that contains everything a page of
-documentation needs --- prose, code examples, and program output ---
-all in one place. Lightweight directives tell mdexp which parts to
-extract and how to assemble them. Some of those parts are plain text;
-others are type-checked code or test output verified by the build
-system.
+mdexp is a native binary that preprocesses annotated source files
+into readable documents. You write a compilable program whose
+comments contain lightweight directives marking which parts are
+prose, which are code examples, and which are program output to
+capture. Running `mdexp pp` on that file extracts these parts and
+assembles them into the output document.
 
-You write the documentation you want, as a compilable source file.
-mdexp extracts it. The compiler and test framework ensure it stays
-accurate.
+Because the source file is compiled and tested in the usual way,
+code examples are type-checked and program output is verified by
+the test framework on every build. The documentation cannot drift
+from the code.
 
-## A Quick Example
+## A quick example
 
 Consider a source file that documents a compression library. It defines
 a type, shows it in the documentation, then generates a reference table
@@ -27,9 +33,11 @@ from the same type:
 
 ```ocaml
 (* @mdexp
+
 ## Compression
 
 The library supports several compression formats.
+
 @mdexp.code *)
 
 type compression = None | Gzip | Zstd
@@ -87,18 +95,39 @@ The host language compiler, the snapshot framework, mdexp, and the
 rendering tool each handle one concern. You get full editor support
 (LSP, type hints) while writing, and the build catches any drift.
 
-The tool is language-agnostic by design --- neither the input language
-nor the output format is fixed. mdexp is still under active development;
-more source languages and output formats will be added over time.
+The tool is language-agnostic by design --- neither the host language
+nor the output format is fixed. The examples in this book use
+**OCaml** and **Markdown**, but the snapshot mechanism also works
+with other host languages (see [Snapshots](snapshots.md)), and
+the broader design space is discussed in
+[Broadening the View](broadening_the_view.md).
 
-The examples in this book use **OCaml** as the source language and
-**Markdown** as the output, since this is what we have focused on so far.
-The concepts carry over to other languages.
+## What's in this book
 
-## What's in This Book
+The first three chapters cover the building blocks --- the directives
+that make mdexp work:
 
 - [Prose](prose.md) --- writing documentation text
-- [Code Blocks](code_blocks.md) --- embedding code examples
-- [Snapshots](snapshots.md) --- capturing verified program output
+- [Code Blocks](code_blocks.md) --- embedding type-checked code examples
+- [Snapshots](snapshots.md) --- capturing verified program output,
+  with a note on other host languages
   - [ppx_expect](ppx_expect_snapshots.md)
   - [Expect tests without ppx](windtrap_snapshots.md)
+
+From there, we explore what becomes possible when you combine these
+building blocks with the host language's type system:
+
+- [EDSL](edsl.md) --- building embedded DSLs that both render
+  documentation and verify its content
+- [Broadening the View](broadening_the_view.md) --- further use
+  cases, design choices, and the broader pattern
+
+## Acknowledgements
+
+This book was created through detailed iteration and review,
+combining hand-written content with assistance from
+[Claude Code](https://claude.ai/claude-code) (Claude Opus 4.6).
+The conceptual content, structure, and table of contents were
+entirely human-designed and precisely prompted; every section was
+manually reviewed. We benefited from LLM assistance for drafting
+prose, catching mistakes, and iterating on the code examples.

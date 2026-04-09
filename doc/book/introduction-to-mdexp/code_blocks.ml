@@ -8,59 +8,41 @@
 
 # Code Blocks
 
-Use `@mdexp.code` to include code examples in your documentation.
-The extracted code is wrapped in a fenced code block, with `ocaml`
-as the default language.
+The `@mdexp.code` directive marks a region of code for inclusion in
+the documentation. The extracted code is wrapped in a fenced code
+block, tagged with the host language detected from the file
+extension (e.g. `.ml` → `ocaml`).
 
-## Code in Comments
+## Including compilable code
 
-Write code inside comment wrappers. mdexp strips the markers: *)
+Code between `@mdexp.code` and the next directive is real,
+compilable OCaml. The compiler type-checks it along with the
+rest of the file. Here is what the source looks like: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
   {|
 (* @mdexp.code *)
-(* let greeting = "Hello, World!" *)
-(* let () = print_endline greeting *)
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 |}
 ;;
 
-(* @mdexp This produces: *)
+(* @mdexp
+
+And here is the markdown that mdexp produces from it: *)
 
 (* @mdexp.code *)
-(* let greeting = "Hello, World!" *)
-(* let () = print_endline greeting *)
+let answer = 42
+let question_of_life () = Printf.printf "The answer is %d\n" answer
 (* @mdexp.end *)
 
 (* @mdexp
 
-## Actual Code
-
-Code between the directives can also be real, compilable OCaml ---
-not wrapped in comments. This is useful when you want the compiler
-to type-check your documentation examples: *)
-
-(* @mdexp.snapshot { lang: "ocaml" } *)
-let _ =
-  {|
-(* @mdexp.code *)
-let answer = 42
-let question_of_life () = Printf.printf "The answer is %d\n" answer
-(* @mdexp.end *)
-|}
-;;
-
-(* @mdexp The code is included as-is: *)
-
-(* @mdexp.code *)
-let answer = 42
-let question_of_life () = Printf.printf "The answer is %d\n" answer
-(* @mdexp.end *)
-
-(* Here we are in a part of the code that is not exported to the resulting
-   markdown. This can include contents like in any other ml file, including
-   expect tests. *)
+Code outside the directives is invisible to the document but still
+compiled and tested. For instance, the function above is
+exercised in an expect test that does not appear in the output. *)
 
 let%expect_test "code can be executed" =
   question_of_life ();
@@ -69,31 +51,11 @@ let%expect_test "code can be executed" =
 
 (* @mdexp
 
-## Explicit Language
+## Prose to code transition
 
-Override the default language tag with `@mdexp.code { lang: "<lang>" }`: *)
-
-(* @mdexp.snapshot { lang: "ocaml" } *)
-let _ =
-  {|
-(* @mdexp.code { lang: "bash" } *)
-(* opam install mdexp *)
-(* @mdexp.end *)
-|}
-;;
-
-(* @mdexp This produces a `bash`-tagged code fence: *)
-
-(* @mdexp.code { lang: "bash" } *)
-(* opam install mdexp *)
-(* @mdexp.end *)
-
-(* @mdexp
-
-## Prose to Code Transition
-
-A block comment can transition directly from prose into a code block
-using `@mdexp.code` before the block comment closes: *)
+A block comment can transition directly from prose into a code
+block by placing `@mdexp.code` before the closing comment marker.
+This avoids the need for a separate comment: *)
 
 (* @mdexp.snapshot { lang: "ocaml" } *)
 let _ =
@@ -101,18 +63,53 @@ let _ =
 (* @mdexp
 Here is an example:
 @mdexp.code *)
-let hello () = print_endline "Hello!"
+let greet name = Printf.printf "Hello, %s!\n" name
 (* @mdexp.end *)
 |}
 ;;
 
 (* @mdexp
 
-This outputs the prose followed by the code block, without needing
-separate comments:
+This produces the prose paragraph followed by the code block in a
+single, natural flow:
 
+Here is an example:
 @mdexp.code *)
 
-let (_ : string) = "Hello!"
-
+let greet name = Printf.printf "Hello, %s!\n" name
 (* @mdexp.end *)
+
+let%expect_test "greet" =
+  greet "World";
+  [%expect {| Hello, World! |}]
+;;
+
+(* @mdexp
+
+## Explicit language
+
+The language tag is inferred from the file extension. You can override it
+with `@mdexp.code { lang: "<lang>" }`: *)
+
+(* @mdexp.snapshot { lang: "ocaml" } *)
+let _ =
+  {|
+(* @mdexp.code { lang: "bash" } *)
+(* opam install mdexp *)
+(* @mdexp.end *)
+|}
+;;
+
+(* @mdexp
+
+This produces a `bash`-tagged code fence: *)
+
+(* @mdexp.code { lang: "bash" } *)
+(* opam install mdexp *)
+(* @mdexp.end *)
+
+(* @mdexp
+
+Note that the bash command is written inside OCaml comments. This is
+one case where commented code makes sense, since the content is not
+OCaml and cannot be compiled. *)
