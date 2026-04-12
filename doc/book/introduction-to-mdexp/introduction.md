@@ -1,5 +1,7 @@
 # Introduction
 
+*By Mathieu Barbin and Claude Opus 4.6*
+
 This book introduces **mdexp** --- a documentation preprocessor for
 literate programming with embedded snapshots. It is aimed at newcomers
 who want to understand what the tool does, why it is useful, and what
@@ -128,6 +130,10 @@ This book was created through detailed iteration and review,
 combining hand-written content with assistance from
 [Claude Code](https://claude.ai/claude-code) (Claude Opus 4.6).
 The conceptual content, structure, and table of contents were
-entirely human-designed and precisely prompted; every section was
+designed and directed by the human author; every section was
 manually reviewed. We benefited from LLM assistance for drafting
 prose, catching mistakes, and iterating on the code examples.
+In practice the process is fluid --- prompting shapes output,
+output shapes the next prompt --- and the final result resists
+clean attribution, which is why both contributors are listed as
+authors.

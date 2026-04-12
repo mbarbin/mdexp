@@ -1,6 +1,6 @@
 [book]
 title = "Introduction to mdexp"
-authors = ["Mathieu Barbin"]
+authors = ["Mathieu Barbin", "Claude Opus 4.6"]
 description = "A short introduction to literate programming with embedded snapshots"
 language = "en"
 src = "."
