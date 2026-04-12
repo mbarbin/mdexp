@@ -32,7 +32,7 @@ jobs:
         id: mdbook-cache
         with:
           path: ~/.local/bin/mdbook
-          key: mdbook-${{ env.MDBOOK_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.MDBOOK_DIGEST }}
+          key: "mdbook-${{ env.MDBOOK_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.MDBOOK_DIGEST }}"
 
       - name: Install mdbook
         env:
@@ -46,7 +46,7 @@ jobs:
         id: zola-cache
         with:
           path: ~/.local/bin/zola
-          key: zola-${{ env.ZOLA_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.ZOLA_DIGEST }}
+          key: "zola-${{ env.ZOLA_VERSION }}-${{ runner.os }}-${{ runner.arch }}-${{ env.ZOLA_DIGEST }}"
 
       - name: Install zola
         env:
