@@ -1,0 +1,108 @@
+{
+  "recipes": [
+    {
+      "name": "Elixir of Type Safety",
+      "description": "Grants the drinker the ability to see type errors before they happen. Side effects may include an irresistible urge to add type annotations everywhere.",
+      "ingredients": [
+        { "name": "Strongly-Typed Herbs", "quantity": 3.0, "unit": "sprigs" },
+        { "name": "Pattern-Match Petals", "quantity": 7.0, "unit": "petals" },
+        {
+          "name": "Compiler-Checked Roots",
+          "quantity": 15.0,
+          "unit": "grams"
+        }
+      ],
+      "effects": [
+        {
+          "name": "Type Safety Vision",
+          "description": "See type mismatches highlighted in red before compilation",
+          "duration": "8 hours"
+        },
+        {
+          "name": "Exhaustive Intuition",
+          "description": "Instinctively know when a pattern match is incomplete",
+          "duration": "4 hours"
+        }
+      ],
+      "brewing_time": "2 hours at 350°F (the temperature of a warm build)",
+      "difficulty": "Intermediate"
+    },
+    {
+      "name": "Fearless Refactoring Draught",
+      "description": "Emboldens the drinker to restructure code without fear. Warning: may cause spontaneous renaming of variables to more descriptive names.",
+      "ingredients": [
+        {
+          "name": "Compiler-Checked Roots",
+          "quantity": 20.0,
+          "unit": "grams"
+        },
+        { "name": "Test-Coverage Moss", "quantity": 5.0, "unit": "patches" },
+        { "name": "Strongly-Typed Herbs", "quantity": 2.0, "unit": "sprigs" }
+      ],
+      "effects": [
+        {
+          "name": "Fearless Refactoring",
+          "description": "Restructure code with complete confidence that nothing will break",
+          "duration": "6 hours"
+        },
+        {
+          "name": "Dependency Clarity",
+          "description": "See the full dependency graph of any function at a glance",
+          "duration": "3 hours"
+        }
+      ],
+      "brewing_time": "3 hours (stir every time a test passes)",
+      "difficulty": "Advanced"
+    },
+    {
+      "name": "Documentation Dew",
+      "description": "Ensures that documentation never drifts from reality. Brewed exclusively from mdexp-powered sources.",
+      "ingredients": [
+        { "name": "Fresh mdexp Extract", "quantity": 5.0, "unit": "drops" },
+        {
+          "name": "Literate-Programming Lichen",
+          "quantity": 10.0,
+          "unit": "grams"
+        },
+        { "name": "Test-Coverage Moss", "quantity": 3.0, "unit": "patches" }
+      ],
+      "effects": [
+        {
+          "name": "Living Documentation",
+          "description": "All documentation you write automatically stays in sync with the code",
+          "duration": "Until next build"
+        },
+        {
+          "name": "Snapshot Sight",
+          "description": "Instantly see when expected output has drifted from actual output",
+          "duration": "12 hours"
+        }
+      ],
+      "brewing_time": "1 hour (must be brewed during a successful build)",
+      "difficulty": "Beginner"
+    },
+    {
+      "name": "Homebrew Tonic",
+      "description": "Lets you install anything with a single tap. Not to be confused with actual homebrew, though the formula is similar.",
+      "ingredients": [
+        { "name": "Formulaic Fungi", "quantity": 4.0, "unit": "caps" },
+        { "name": "Cask-Aged Oak Bark", "quantity": 6.0, "unit": "strips" },
+        { "name": "Fresh mdexp Extract", "quantity": 2.0, "unit": "drops" }
+      ],
+      "effects": [
+        {
+          "name": "One-Tap Install",
+          "description": "Install any tool with a single command — no dependency hell",
+          "duration": "Permanent (until next OS upgrade)"
+        },
+        {
+          "name": "Formula Intuition",
+          "description": "Instinctively know the right flags for any CLI tool",
+          "duration": "8 hours"
+        }
+      ],
+      "brewing_time": "45 minutes (brew in a clean environment)",
+      "difficulty": "Beginner"
+    }
+  ]
+}

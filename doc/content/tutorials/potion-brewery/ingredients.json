@@ -1,0 +1,60 @@
+{
+  "ingredients": [
+    {
+      "name": "Strongly-Typed Herbs",
+      "category": "Flora",
+      "potency": 8,
+      "unit": "sprigs",
+      "notes": "Must be freshly picked from a well-typed garden"
+    },
+    {
+      "name": "Pattern-Match Petals",
+      "category": "Flora",
+      "potency": 7,
+      "unit": "petals",
+      "notes": "Each petal covers one variant — ensure exhaustive collection"
+    },
+    {
+      "name": "Compiler-Checked Roots",
+      "category": "Underground",
+      "potency": 9,
+      "unit": "grams",
+      "notes": "Will not dissolve if the solution contains errors"
+    },
+    {
+      "name": "Test-Coverage Moss",
+      "category": "Flora",
+      "potency": 6,
+      "unit": "patches",
+      "notes": "Grows thicker in well-tested environments"
+    },
+    {
+      "name": "Fresh mdexp Extract",
+      "category": "Distilled",
+      "potency": 10,
+      "unit": "drops",
+      "notes": "Extracted from literate programs at build time"
+    },
+    {
+      "name": "Literate-Programming Lichen",
+      "category": "Flora",
+      "potency": 7,
+      "unit": "grams",
+      "notes": "Found growing on well-documented codebases"
+    },
+    {
+      "name": "Formulaic Fungi",
+      "category": "Mycology",
+      "potency": 5,
+      "unit": "caps",
+      "notes": "Thrives in formulaic environments — pairs well with taps"
+    },
+    {
+      "name": "Cask-Aged Oak Bark",
+      "category": "Arboreal",
+      "potency": 4,
+      "unit": "strips",
+      "notes": "Aged in casks for at least one major version cycle"
+    }
+  ]
+}

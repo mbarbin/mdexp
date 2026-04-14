@@ -1,0 +1,81 @@
+(library
+ (name potion_brewery_tutorial)
+ (package mdexp-tests)
+ (modules potion potion_brewery)
+ (inline_tests)
+ (flags
+  :standard
+  -w
+  +a-4-40-41-42-44-45-48-66
+  -warn-error
+  +a
+  -open
+  Mdexp_stdlib)
+ (libraries mdexp_stdlib print-table yojson)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect)))
+
+(executable
+ (name generate_config)
+ (instrumentation
+  (backend bisect_ppx))
+ (modules generate_config)
+ (flags
+  :standard
+  -w
+  +a-4-40-41-42-44-45-48-66
+  -warn-error
+  +a
+  -open
+  Mdexp_stdlib)
+ (libraries
+  cmdlang-cmdliner-err-runner
+  mdexp_stdlib
+  potion_brewery_tutorial
+  yojson))
+
+; potion_brewery
+
+(rule
+ (target potion_brewery.output)
+ (deps potion_brewery.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:mdexp} pp %{deps}))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff index.md potion_brewery.output)))
+
+; generate config files
+
+(rule
+ (target ingredients.json.output)
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./generate_config.exe ingredients))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff ingredients.json ingredients.json.output)))
+
+(rule
+ (target recipes.json.output)
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./generate_config.exe recipes))))
+
+(rule
+ (package mdexp-tests)
+ (alias runtest)
+ (action
+  (diff recipes.json recipes.json.output)))

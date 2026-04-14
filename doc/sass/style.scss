@@ -59,14 +59,14 @@ h3 { font-size: 1.25rem; }
 h4 { font-size: 1rem; }
 
 code {
-  padding: 0px 10px;
-  border-radius: 5px;
-  background-color: var(--fg-color);
-  color: var(--bg-color);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--cyan-color);
 }
 
 pre {
-  padding: 1em;
+  padding: 0.5em 0.75em;
   border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--cyan-color);
@@ -77,13 +77,17 @@ pre > code {
   background-color: transparent;
   color: var(--fg-color);
   padding: 0;
+
+  span {
+    background-color: transparent !important;
+  }
 }
 
 hr {
   border: 0;
   height: 1px;
   background: var(--cyan-color);
-  margin: 1em 0;
+  margin: 0.25em 0;
 }
 
 blockquote {
@@ -91,6 +95,10 @@ blockquote {
   padding: 1em;
   margin: 1em 0;
   background-color: rgba(255, 255, 255, 0.05);
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
 }
 
 img {
@@ -98,6 +106,48 @@ img {
   border-radius: 5px;
   max-width: 100%;
   height: auto;
+}
+
+table {
+  margin: 1em auto;
+  border-collapse: collapse;
+  width: auto;
+
+  thead {
+    background-color: rgba(255, 255, 255, 0.1);
+
+    th {
+      padding: 0.4em 1.25em;
+      font-weight: 700;
+      border-bottom: 2px solid var(--cyan-color);
+    }
+  }
+
+  td {
+    padding: 0.4em 1.25em;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  tbody tr:nth-child(2n) {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+}
+
+details {
+  margin-bottom: 1em;
+}
+
+// Header: hide on scroll down, show on scroll up
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--bg-color);
+  transition: transform 0.3s ease;
+
+  &.header-hidden {
+    transform: translateY(-100%);
+  }
 }
 
 // Top navigation
@@ -129,30 +179,25 @@ img {
   }
 }
 
-// Three-column page wrapper
+// Two-column page wrapper: sidebar + content
 .page-wrapper {
-  display: flex;
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 1.5rem;
-  gap: 2rem;
+  padding: 1rem 1.5rem 1rem calc(220px + 3.5rem);
 
   main {
-    flex: 1;
-    min-width: 0;
-    max-width: 720px;
+    max-width: 960px;
+    padding: 0 1.5rem;
   }
 }
 
 // Left sidebar
 .sidebar {
   width: 220px;
-  flex-shrink: 0;
   font-size: 0.85rem;
-  position: sticky;
-  top: 1rem;
-  align-self: flex-start;
-  max-height: calc(100vh - 4rem);
+  position: fixed;
+  left: 1.5rem;
+  top: 4.5rem;
+  max-height: calc(100vh - 4.5rem);
   overflow-y: auto;
 
   .sidebar-section {
@@ -204,54 +249,14 @@ img {
           }
         }
       }
-    }
-  }
-}
 
-// Right sidebar: table of contents
-.toc {
-  width: 200px;
-  flex-shrink: 0;
-  font-size: 0.8rem;
-  position: sticky;
-  top: 1rem;
-  align-self: flex-start;
-  max-height: calc(100vh - 4rem);
-  overflow-y: auto;
-
-  h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--comment-color);
-  }
-
-  h4:before { content: none; }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-      padding: 0.15rem 0;
-
-      a {
-        color: var(--comment-color);
-        text-decoration: none;
-
-        &:hover {
-          color: var(--orange-color);
-        }
+      ul {
+        padding-left: 0.75rem;
       }
     }
-
-    ul {
-      padding-left: 0.75rem;
-    }
   }
 }
+
 
 // Landing page
 .hero {
@@ -330,14 +335,21 @@ footer {
 }
 
 // Responsive
+@media (max-width: 1200px) {
+  body {
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 900px) {
   .page-wrapper {
-    flex-direction: column;
+    padding-left: 1.5rem;
   }
 
-  .sidebar, .toc {
+  .sidebar {
     width: 100%;
     position: static;
+    left: auto;
     max-height: none;
   }
 

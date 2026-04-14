@@ -3,26 +3,34 @@
 {% block title %}{{ page.title }} - {{ config.title }}{% endblock title %}
 
 {% block sidebar %}
+{% if page.toc | length > 0 %}
 <aside class="sidebar">
-  {% set root = get_section(path="_index.md") %}
-  {% for subsection_path in root.subsections %}
-    {% set sub = get_section(path=subsection_path) %}
-    {% if sub.title != "Blog" and sub.title != "Books" %}
-    <div class="sidebar-section">
-      <h4><a href="{{ sub.permalink }}">{{ sub.title }}</a></h4>
-      <ul>
-        {% for subsub_path in sub.subsections %}
-          {% set subsub = get_section(path=subsub_path) %}
-          <li><a href="{{ subsub.permalink }}" {% if page.ancestors and subsub.permalink in page.ancestors %}class="active"{% endif %}>{{ subsub.title }}</a></li>
-        {% endfor %}
-        {% for pg in sub.pages %}
-          <li><a href="{{ pg.permalink }}" {% if page.permalink == pg.permalink %}class="active"{% endif %}>{{ pg.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
-  {% endfor %}
+  <div class="sidebar-section">
+    <h4>On this page</h4>
+    <ul>
+      {% for h in page.toc %}
+      <li><a href="{{ h.permalink }}">{{ h.title }}</a>
+        {% if h.children | length > 0 %}
+        <ul>
+          {% for child in h.children %}
+          <li><a href="{{ child.permalink }}">{{ child.title }}</a>
+            {% if child.children | length > 0 %}
+            <ul>
+              {% for grandchild in child.children %}
+              <li><a href="{{ grandchild.permalink }}">{{ grandchild.title }}</a></li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
 </aside>
+{% endif %}
 {% endblock sidebar %}
 
 {% block content %}
@@ -44,24 +52,3 @@
   {{ page.content | safe }}
 </article>
 {% endblock content %}
-
-{% block toc %}
-{% if page.toc | length > 0 %}
-<aside class="toc">
-  <h4>On this page</h4>
-  <ul>
-    {% for h in page.toc %}
-    <li><a href="{{ h.permalink }}">{{ h.title }}</a>
-      {% if h.children | length > 0 %}
-      <ul>
-        {% for child in h.children %}
-        <li><a href="{{ child.permalink }}">{{ child.title }}</a></li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-</aside>
-{% endif %}
-{% endblock toc %}

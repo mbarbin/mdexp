@@ -35,18 +35,67 @@
           <a href="{{ config.extra.github_url }}">GitHub</a>
         </div>
       </nav>
+      <hr>
     </header>
-    <hr>
     <div class="page-wrapper">
       {% block sidebar %}{% endblock sidebar %}
       <main>
         {% block content %}{% endblock content %}
       </main>
-      {% block toc %}{% endblock toc %}
     </div>
     <hr>
     <footer>
       <p>&copy; {{ now() | date(format="%Y") }} Mathieu Barbin. Powered by <a href="https://www.getzola.org/">Zola</a> and <a href="https://github.com/mxaddict/zolanight">ZolaNight</a>. Docs organized following <a href="https://diataxis.fr/">Diátaxis</a>.</p>
     </footer>
+    <script>
+      (function() {
+        // Header: hide on scroll down, show on scroll up
+        var header = document.querySelector('header');
+        var lastY = window.scrollY;
+        window.addEventListener('scroll', function() {
+          var y = window.scrollY;
+          if (y > lastY && y > 50) {
+            header.classList.add('header-hidden');
+          } else {
+            header.classList.remove('header-hidden');
+          }
+          lastY = y;
+        });
+
+        // Scroll spy: highlight active section in sidebar
+        var sidebarLinks = Array.from(document.querySelectorAll('.sidebar a'));
+        var headings = [];
+        sidebarLinks.forEach(function(link) {
+          var href = link.getAttribute('href');
+          var hashIdx = href.indexOf('#');
+          if (hashIdx === -1) return;
+          var id = decodeURIComponent(href.slice(hashIdx + 1));
+          var el = document.getElementById(id);
+          if (el) headings.push({ el: el, link: link });
+        });
+
+        if (headings.length > 0) {
+          function updateActive() {
+            var current = null;
+            // Scale the threshold: near the top of the page use 100px,
+            // near the bottom use up to the full viewport height so
+            // every heading becomes reachable.
+            var scrollable = document.body.scrollHeight - window.innerHeight;
+            var progress = scrollable > 0 ? window.scrollY / scrollable : 0;
+            var threshold = 100 + progress * (window.innerHeight - 100);
+            for (var i = 0; i < headings.length; i++) {
+              if (headings[i].el.getBoundingClientRect().top <= threshold) {
+                current = headings[i];
+              }
+            }
+            sidebarLinks.forEach(function(link) { link.classList.remove('active'); });
+            if (current) current.link.classList.add('active');
+          }
+
+          window.addEventListener('scroll', updateActive, { passive: true });
+          updateActive();
+        }
+      })();
+    </script>
   </body>
 </html>
