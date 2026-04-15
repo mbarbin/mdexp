@@ -31,13 +31,13 @@
         </div>
         <div class="nav-links-right">
           <a href="{{ get_url(path="@/blog/_index.md") }}">Blog</a>
-          <a href="{{ get_url(path="@/books/_index.md") }}">Books</a>
+          <a href="{{ get_url(path="@/resources/_index.md") }}">Resources</a>
           <a href="{{ config.extra.github_url }}">GitHub</a>
         </div>
       </nav>
       <hr>
     </header>
-    <div class="page-wrapper">
+    <div class="page-wrapper{% block wrapper_class %}{% endblock wrapper_class %}">
       {% block sidebar %}{% endblock sidebar %}
       <main>
         {% block content %}{% endblock content %}
