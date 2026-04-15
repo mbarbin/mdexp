@@ -1,11 +1,10 @@
 +++
-title = "Books"
+title = "Resources"
 +++
 
-In addition to the main site documentation, mdexp offers **standalone books**
---- longer reads designed to be consumed cover-to-cover or offline. Each book
-is self-contained: it has its own table of contents, narrative arc, and can be
-read independently from the rest of the documentation.
+Additional content meant to complement the documentation in different ways ---
+from standalone documents to links showing how mdexp is used in external
+projects and beyond.
 
 ## [Introduction to mdexp](../book/introduction-to-mdexp/)
 
