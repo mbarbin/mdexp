@@ -188,6 +188,14 @@ header {
     max-width: 960px;
     padding: 0 1.5rem;
   }
+
+  &.no-sidebar {
+    padding: 1rem 1.5rem;
+
+    main {
+      margin: 0 auto;
+    }
+  }
 }
 
 // Left sidebar

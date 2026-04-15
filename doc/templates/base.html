@@ -37,7 +37,7 @@
       </nav>
       <hr>
     </header>
-    <div class="page-wrapper">
+    <div class="page-wrapper{% block wrapper_class %}{% endblock wrapper_class %}">
       {% block sidebar %}{% endblock sidebar %}
       <main>
         {% block content %}{% endblock content %}

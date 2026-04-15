@@ -2,6 +2,8 @@
 
 {% block title %}{{ config.title }}{% endblock title %}
 
+{% block wrapper_class %} no-sidebar{% endblock wrapper_class %}
+
 {% block content %}
 <section class="hero">
   <h1>{{ section.title }}</h1>
@@ -27,20 +29,21 @@
   </div>
 </section>
 
-{% set blog_section = get_section(path="blog/_index.md") %}
-{% if blog_section.pages | length > 0 %}
 <section>
-  <h2>Latest Posts</h2>
+  <h2>Latest Additions</h2>
   <ul>
-    {% for page in blog_section.pages | slice(end=5) %}
     <li>
-      {% if page.date %}
-      <time datetime="{{ page.date | date(format="%Y-%m-%d") }}">{{ page.date | date(format="%Y-%m-%d") }}</time> —
-      {% endif %}
-      <a href="{{ page.permalink }}">{{ page.title }}</a>
+      <time datetime="2026-04-13">2026-04-13</time> —
+      <a href="{{ get_url(path="@/tutorials/potion-brewery/index.md") }}">The Potion Brewery</a>
     </li>
-    {% endfor %}
+    <li>
+      <time datetime="2026-04-09">2026-04-09</time> —
+      <a href="book/introduction-to-mdexp/">Introduction to mdexp</a>
+    </li>
+    <li>
+      <time datetime="2026-04-09">2026-04-09</time> —
+      <a href="{{ get_url(path="@/blog/hello/index.md") }}">Hello</a>
+    </li>
   </ul>
 </section>
-{% endif %}
 {% endblock content %}
