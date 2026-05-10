@@ -2,7 +2,7 @@
 base_url = "https://mbarbin.github.io/mdexp/"
 
 title = "mdexp"
-description = "Literate Programming with Embedded Snapshots"
+description = "Literate programming with embedded snapshots"
 
 # The default language
 default_language = "en"
