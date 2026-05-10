@@ -13,3 +13,9 @@ what mdexp does and why it is useful. It walks through the core directives ---
 prose, code blocks, and snapshots --- with concrete examples in OCaml.
 
 **Authors:** Mathieu Barbin, Claude Opus 4.6 | **Audience:** New users
+
+## [Test Suite](../book/test-suite/)
+
+The internal test suite for mdexp, using mdexp of course.
+
+**Authors:** Mathieu Barbin, Claude Opus 4.7 | **Audience:** Mdexp developers and contributors
