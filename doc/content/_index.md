@@ -1,5 +1,5 @@
 +++
-title = "mdexp — Literate Programming with Embedded Snapshots"
+title = "Literate programming with embedded snapshots"
 template = "index.html"
 sort_by = "weight"
 +++

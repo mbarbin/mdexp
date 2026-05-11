@@ -1,4 +1,4 @@
-# mdexp Test Suite
+# Mdexp Test Suite
 
 This book contains the test suite for mdexp, organized as documentation.
 
